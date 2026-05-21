@@ -1,0 +1,13 @@
+[project]
+name = "mneme"
+version = "0.1.0"
+description = "Python SDK for Mneme — memory for LLM agents"
+requires-python = ">=3.9"
+dependencies = ["httpx>=0.27"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mneme"]

@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+}
+
+html, body {
+  background: var(--bg);
+  color: #111827;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.tag {
+  display: inline-block;
+  background: #eef2f8;
+  color: #0b1f3a;
+  border-radius: 3px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
