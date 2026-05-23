@@ -31,6 +31,7 @@ class Mneme:
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
         kind: str = "semantic",
+        scope: str = "private",
         meta: Optional[Dict[str, Any]] = None,
         importance: float = 0.5,
     ) -> Dict[str, Any]:
@@ -40,6 +41,7 @@ class Mneme:
             "user_id": user_id,
             "session_id": session_id,
             "kind": kind,
+            "scope": scope,
             "meta": meta or {},
             "importance": importance,
         })
@@ -55,6 +57,7 @@ class Mneme:
         agent_id: Optional[str] = None,
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
+        scope: str = "private",
         persist: bool = True,
     ) -> Dict[str, Any]:
         """Auto-extract atomic memories from a conversation using the agent's LLM."""
@@ -65,6 +68,7 @@ class Mneme:
             "agent_id": agent_id,
             "user_id": user_id,
             "session_id": session_id,
+            "scope": scope,
             "persist": persist,
         })
         r.raise_for_status()
@@ -79,7 +83,14 @@ class Mneme:
         session_id: Optional[str] = None,
         kind: Optional[str] = None,
         limit: int = 10,
+        mode: str = "hybrid",            # "hybrid" | "vector" | "lexical"
         recency_weight: float = 0.15,
+        rrf_k: int = 60,
+        candidates: int = 30,
+        rerank: bool = False,            # cross-encoder rerank (needs reranker on agent)
+        rerank_top_k: int = 30,
+        rewrite: bool = False,           # LLM query expansion (needs LLM on agent)
+        use_graph: bool = False,         # graph-augmented retrieval (needs graph on agent)
         cross_agent: bool = False,
     ) -> Dict[str, Any]:
         r = self._client.post("/v1/memories/search", json={
@@ -89,7 +100,14 @@ class Mneme:
             "session_id": session_id,
             "kind": kind,
             "limit": limit,
+            "mode": mode,
             "recency_weight": recency_weight,
+            "rrf_k": rrf_k,
+            "candidates": candidates,
+            "rerank": rerank,
+            "rerank_top_k": rerank_top_k,
+            "rewrite": rewrite,
+            "use_graph": use_graph,
             "cross_agent": cross_agent,
         })
         r.raise_for_status()
@@ -128,6 +146,22 @@ class Mneme:
 
     def stats(self) -> Dict[str, Any]:
         r = self._client.get("/v1/stats")
+        r.raise_for_status()
+        return r.json()
+
+    # -------- graph memory --------
+
+    def graph(self, *, agent_id: Optional[str] = None, limit: int = 300) -> Dict[str, Any]:
+        params = {"limit": limit}
+        if agent_id:
+            params["agent_id"] = agent_id
+        r = self._client.get("/v1/graph", params=params)
+        r.raise_for_status()
+        return r.json()
+
+    def rebuild_graph(self, *, agent_id: Optional[str] = None) -> Dict[str, Any]:
+        params = {"agent_id": agent_id} if agent_id else {}
+        r = self._client.post("/v1/graph/rebuild", params=params)
         r.raise_for_status()
         return r.json()
 
