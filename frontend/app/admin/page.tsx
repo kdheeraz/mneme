@@ -19,6 +19,7 @@ export default function AdminPage() {
 
   const { data: users, error, mutate } = useSWR(ready ? "admin-users" : null, () => api.adminUsers());
   const { data: messages } = useSWR(ready ? "admin-contact" : null, () => api.adminContact());
+  const { data: lic } = useSWR(ready ? "license" : null, () => api.license());
 
   // Non-admins get a 403 from the API → bounce them to the tenant dashboard.
   useEffect(() => {
@@ -48,6 +49,34 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-12">
+        {/* License */}
+        {lic && (
+          <div className="panel p-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-gray-500">License</div>
+              <div className="mt-0.5 font-semibold text-ink">
+                {lic.tier === "community"
+                  ? "Community"
+                  : `${lic.tier.charAt(0).toUpperCase()}${lic.tier.slice(1)}${lic.customer ? ` — ${lic.customer}` : ""}`}
+                {lic.tier !== "community" && (
+                  <span className="tag ml-2" style={{ background: "#dcfce7", color: "#14532d" }}>licensed</span>
+                )}
+              </div>
+            </div>
+            <div className="text-right text-xs text-gray-500">
+              {lic.tier === "community" ? (
+                <>Up to {lic.max_users} accounts on this instance — a Business license removes the cap.</>
+              ) : (
+                <>
+                  {lic.max_users ? `${lic.max_users} accounts` : "Unlimited accounts"}
+                  {lic.expires_at ? ` · expires ${new Date(lic.expires_at * 1000).toLocaleDateString()}` : ""}
+                </>
+              )}
+              {lic.note && <div className="text-amber-600 mt-0.5">{lic.note}</div>}
+            </div>
+          </div>
+        )}
+
         {/* Users */}
         <section>
           <h2 className="text-xl font-bold text-ink">Users</h2>

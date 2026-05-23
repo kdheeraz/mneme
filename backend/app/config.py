@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     # (see all users, subscriptions, enable/disable accounts).
     admin_emails: str = "demo@mneme.dev"
 
+    # Open-core licensing: a self-hosted instance with no Business license allows
+    # up to this many accounts. A signed license (MNEME_LICENSE_KEY) lifts the cap.
+    community_max_users: int = 3
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

@@ -138,6 +138,7 @@ export const api = {
   contact: (body: { name: string; email: string; message: string }) =>
     jreq<any>("/v1/contact", { method: "POST", body: JSON.stringify(body) }, false),
   publicPlans: () => jreq<any[]>("/v1/billing/plans/public", {}, false),
+  license: () => jreq<any>("/v1/license", {}, false),
 
   // admin / operator (JWT, admin-email gated)
   adminContact: () => jreq<any[]>("/v1/admin/contact"),

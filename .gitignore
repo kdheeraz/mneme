@@ -17,3 +17,8 @@ out/
 .vscode/
 .idea/
 .DS_Store
+
+# Vendor license signing key — NEVER commit
+.license_signing_key.pem
+backend/.license_signing_key.pem
+.licgen/

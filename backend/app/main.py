@@ -40,6 +40,7 @@ from .consolidate import consolidate as run_consolidate
 from .reconcile import reconcile_write
 from .graph import ingest_to_graph, graph_candidates
 from . import billing
+from . import license as licensing
 from .config import settings
 
 
@@ -87,6 +88,20 @@ def contact(body: ContactIn, db: Session = Depends(get_db)):
     db.add(ContactMessage(name=body.name.strip(), email=str(body.email), message=body.message.strip()))
     db.commit()
     return {"ok": True}
+
+
+@app.get("/v1/license")
+def license_status():
+    """This instance's license tier + entitlements (public)."""
+    lic = licensing.get_license()
+    return {
+        "tier": lic["tier"],
+        "customer": lic.get("customer"),
+        "expires_at": lic.get("expires_at"),
+        "features": lic.get("features") or [],
+        "max_users": lic.get("max_users"),
+        "note": lic.get("note"),
+    }
 
 
 @app.get("/v1/admin/contact", response_model=List[ContactOut])
@@ -147,6 +162,17 @@ def admin_set_user(user_id: UUID, body: AdminUserUpdate,
 def signup(body: SignupIn, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == body.email.lower()).first():
         raise HTTPException(400, "email already registered")
+
+    # Open-core: community instances cap total accounts; a Business license lifts it.
+    cap = licensing.max_users()
+    if cap is not None:
+        n = db.query(func.count(User.id)).scalar() or 0
+        if n >= cap:
+            raise HTTPException(
+                402,
+                f"This instance has reached its {licensing.tier()} limit of {cap} accounts. "
+                "A Business license removes the cap — see docs/LICENSING.md or contact sales.",
+            )
 
     user = User(
         email=body.email.lower(),
