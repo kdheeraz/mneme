@@ -11,6 +11,8 @@
 
 > Working name. Pick a real one before launch.
 
+**Full docs:** [docs/](./docs/) — [HLD](./docs/HLD.md) · [LLD](./docs/LLD.md) · [API](./docs/API.md) · [Features](./docs/FEATURES.md) · [Edge cases](./docs/EDGE_CASES.md)
+
 ```
 ┌─────────────────┐     ┌─────────────────────────────────┐     ┌────────────────────┐
 │  user signs up  │     │   Mneme API                     │ ──▶ │ Postgres + pgvector│
@@ -156,6 +158,21 @@ make demo
 | GET    | `/v1/stats`              |
 
 Full Swagger: http://localhost:8000/docs
+
+## Shared memory pool (beta)
+
+Memories carry a `scope`: `private` (only the owning agent) or `shared` (every agent in
+the tenant). Each agent's search returns its own private memories **+** the shared pool.
+Agent-scoped keys cannot escape `own + shared`; only tenant-wide keys can read all
+private memories (`cross_agent: true`).
+
+**Beta caveat:** cross-agent *semantic* search is only correct when the agents involved
+use the **same embedding model** — vectors from different models live in different spaces
+and aren't comparable. Cross-model shared search still works via the lexical (BM25) leg.
+
+Roadmap to GA: per-agent private embeddings + a per-model vector store (Option A: a
+`memory_embeddings(memory_id, model_key, vector)` table, or Qdrant named vectors) so
+agents can use different embedders while shared semantic search stays correct.
 
 ## Multi-tenancy model
 
