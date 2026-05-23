@@ -43,17 +43,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen">
-      <header className="bg-ink text-white px-6 py-3 flex items-center justify-between">
-        <div className="flex items-baseline gap-3">
-          <span className="text-lg font-bold">Mneme</span>
-          <span className="text-[11px] uppercase tracking-widest opacity-70">{tenant?.name}</span>
-        </div>
-        <div className="flex items-center gap-4 text-xs">
-          {user?.is_admin && (
-            <Link href="/admin" className="opacity-80 hover:opacity-100 underline-offset-2 hover:underline">Admin</Link>
-          )}
-          <span className="opacity-80">{user?.email}</span>
-          <button onClick={logout} className="opacity-80 hover:opacity-100">Sign out</button>
+      <header className="bg-ink text-white">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <span className="text-lg font-bold">Mneme</span>
+            <span className="text-[11px] uppercase tracking-widest opacity-70 whitespace-nowrap truncate">{tenant?.name}</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs shrink-0">
+            {user?.is_admin && (
+              <Link href="/admin" className="opacity-80 hover:opacity-100 underline-offset-2 hover:underline whitespace-nowrap">Admin</Link>
+            )}
+            <span className="opacity-80 whitespace-nowrap hidden sm:inline">{user?.email}</span>
+            <button onClick={logout} className="opacity-80 hover:opacity-100 whitespace-nowrap">Sign out</button>
+          </div>
         </div>
       </header>
       <main className="p-6 max-w-7xl mx-auto">{children}</main>

@@ -21,12 +21,12 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
+      <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition ${
+            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition whitespace-nowrap shrink-0 ${
               tab === t.id ? "border-ink text-ink" : "border-transparent text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -470,25 +470,25 @@ function AgentRow({
 
   return (
     <div>
-      <div className="px-4 py-3 flex items-center gap-4">
-        <div className="flex-1 cursor-pointer" onClick={onToggle}>
-          <div className="flex items-center gap-2">
+      <div className="px-4 py-3 flex items-start gap-4">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onToggle}>
+          <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-ink">{agent.name}</span>
             <span className="tag mono">{agent.slug}</span>
-            <span className="tag" style={{ background: "#fef3c7", color: "#92400e" }}>
+            <span className="tag max-w-full truncate" style={{ background: "#fef3c7", color: "#92400e" }}>
               {agent.llm_provider}:{agent.llm_model}
             </span>
             <span className="tag" style={{ background: "#dcfce7", color: "#14532d" }}>
               emb: {agent.embedding_provider}
             </span>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 mt-1 truncate">
             {agent.description || <i>no description</i>}  ·  {agent.memory_count} memories
           </div>
         </div>
         <button
           onClick={activate}
-          className="text-xs bg-ink text-white px-3 py-1.5 rounded hover:opacity-90"
+          className="shrink-0 whitespace-nowrap text-xs bg-ink text-white px-3 py-1.5 rounded hover:opacity-90"
         >
           Use this agent
         </button>
@@ -602,7 +602,7 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
   return (
     <div className="bg-gray-50 px-4 py-4 space-y-5">
       <Section title="Config">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Inp label="Name" v={edit.name} on={(v) => setEdit({ ...edit, name: v })} />
           <Inp label="Description" v={edit.description} on={(v) => setEdit({ ...edit, description: v })} />
 
@@ -624,7 +624,7 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
               />
             </div>
           )}
-          {edit.llm_provider !== "none" && edit.llm_provider !== "ollama" && edit.llm_provider !== "bedrock" && (
+          {edit.llm_provider !== "none" && edit.llm_provider !== "bedrock" && (
             <div className="col-span-2">
               <Inp
                 label={`LLM API key  ${agent.llm_api_key_set ? "(set ✓)" : ""}`}
@@ -678,7 +678,7 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
               />
             </div>
           )}
-          {edit.embedding_provider === "openai" && (
+          {(edit.embedding_provider === "openai" || edit.embedding_provider === "ollama") && (
             <div className="col-span-2">
               <Inp
                 label={`Embedding API key  ${agent.embedding_api_key_set ? "(set ✓)" : ""}`}
@@ -927,7 +927,7 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
         <h3 className="font-semibold text-ink">Register new agent</h3>
         <button onClick={onClose} className="text-xs text-gray-500 hover:text-gray-800">cancel</button>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Inp label="Name *" v={v.name} on={(x) => setV({ ...v, name: x })} placeholder="Research Bot" />
         <Inp label="Slug (auto if blank)" v={v.slug} on={(x) => setV({ ...v, slug: x })} placeholder="research-bot" mono />
         <div className="col-span-2">
@@ -947,7 +947,7 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
             />
           </div>
         )}
-        {(v.llm_provider === "openai" || v.llm_provider === "anthropic") && (
+        {(v.llm_provider === "openai" || v.llm_provider === "anthropic" || v.llm_provider === "ollama") && (
           <div className="col-span-2">
             <Inp label="LLM API key (optional)" v={v.llm_api_key} on={(x) => setV({ ...v, llm_api_key: x })} mono placeholder="sk-..." />
           </div>
@@ -978,7 +978,7 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
             />
           </div>
         )}
-        {v.embedding_provider === "openai" && (
+        {(v.embedding_provider === "openai" || v.embedding_provider === "ollama") && (
           <div className="col-span-2">
             <Inp label="Embedding API key (optional)" v={v.embedding_api_key} on={(x) => setV({ ...v, embedding_api_key: x })} mono placeholder="sk-..." />
           </div>
@@ -1130,7 +1130,7 @@ function FilterInput({
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="border border-gray-300 rounded px-2 py-1.5 text-sm mono w-44"
+        className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm mono"
         placeholder="filter…"
       />
     </div>
@@ -1624,38 +1624,40 @@ function Traces() {
   const { data } = useSWR("traces", () => api.listTraces({ limit: "200" }), { refreshInterval: 3000 });
   const [open, setOpen] = useState<string | null>(null);
   return (
-    <div className="panel divide-y divide-gray-100">
-      <div className="px-4 py-2 grid grid-cols-12 text-[11px] uppercase tracking-wider text-gray-500">
-        <div className="col-span-2">When</div>
-        <div className="col-span-1">Op</div>
-        <div className="col-span-2">Agent</div>
-        <div className="col-span-5">Query / preview</div>
-        <div className="col-span-1">Hits</div>
-        <div className="col-span-1">Latency</div>
-      </div>
-      {(data ?? []).map((t: any) => {
-        const hitsArr = Array.isArray(t.results) ? t.results : t.results?.hits;
-        const hitCount = Array.isArray(hitsArr) ? hitsArr.length : 0;
-        const isOpen = open === t.id;
-        return (
-          <div key={t.id}>
-            <div onClick={() => setOpen(isOpen ? null : t.id)} className="px-4 py-3 grid grid-cols-12 items-center cursor-pointer hover:bg-gray-50 text-sm">
-              <div className="col-span-2 text-xs mono text-gray-600">{new Date(t.created_at).toLocaleTimeString()}</div>
-              <div className="col-span-1"><span className="tag">{t.op}</span></div>
-              <div className="col-span-2 text-xs mono text-gray-700">{t.agent_id || "-"}</div>
-              <div className="col-span-5 truncate text-xs">{t.query || "(no query)"}</div>
-              <div className="col-span-1 text-xs mono">{hitCount}</div>
-              <div className="col-span-1 text-xs mono">{t.latency_ms ?? "-"}ms</div>
-            </div>
-            {isOpen && (
-              <div className="px-4 py-3 bg-gray-50 text-xs mono whitespace-pre-wrap">
-                {JSON.stringify(t.results, null, 2)}
+    <div className="panel overflow-x-auto">
+      <div className="min-w-[720px] divide-y divide-gray-100">
+        <div className="px-4 py-2 grid grid-cols-12 gap-3 text-[11px] uppercase tracking-wider text-gray-500">
+          <div className="col-span-2">When</div>
+          <div className="col-span-2">Op</div>
+          <div className="col-span-2">Agent</div>
+          <div className="col-span-4">Query / preview</div>
+          <div className="col-span-1">Hits</div>
+          <div className="col-span-1">Latency</div>
+        </div>
+        {(data ?? []).map((t: any) => {
+          const hitsArr = Array.isArray(t.results) ? t.results : t.results?.hits;
+          const hitCount = Array.isArray(hitsArr) ? hitsArr.length : 0;
+          const isOpen = open === t.id;
+          return (
+            <div key={t.id}>
+              <div onClick={() => setOpen(isOpen ? null : t.id)} className="px-4 py-3 grid grid-cols-12 gap-3 items-center cursor-pointer hover:bg-gray-50 text-sm">
+                <div className="col-span-2 min-w-0 truncate text-xs mono text-gray-600">{new Date(t.created_at).toLocaleTimeString()}</div>
+                <div className="col-span-2 min-w-0"><span className="tag">{t.op}</span></div>
+                <div className="col-span-2 min-w-0 truncate text-xs mono text-gray-700">{t.agent_id || "-"}</div>
+                <div className="col-span-4 min-w-0 truncate text-xs">{t.query || "(no query)"}</div>
+                <div className="col-span-1 min-w-0 text-xs mono">{hitCount}</div>
+                <div className="col-span-1 min-w-0 text-xs mono">{t.latency_ms ?? "-"}ms</div>
               </div>
-            )}
-          </div>
-        );
-      })}
-      {data && data.length === 0 && <div className="p-6 text-sm text-gray-500">No traces yet. Try a search.</div>}
+              {isOpen && (
+                <div className="px-4 py-3 bg-gray-50 text-xs mono whitespace-pre-wrap break-all">
+                  {JSON.stringify(t.results, null, 2)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {data && data.length === 0 && <div className="p-6 text-sm text-gray-500">No traces yet. Try a search.</div>}
+      </div>
     </div>
   );
 }
