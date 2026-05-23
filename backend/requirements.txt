@@ -9,6 +9,7 @@ email-validator==2.2.0
 python-dotenv==1.0.1
 openai==1.57.4
 anthropic==0.40.0
+boto3>=1.34  # AWS auth for the Bedrock client (anthropic.AnthropicBedrock)
 redis==5.2.1
 httpx==0.28.1
 numpy==2.2.0
@@ -16,3 +17,5 @@ bcrypt==4.2.1
 PyJWT==2.10.1
 cryptography==44.0.0
 python-slugify==8.0.4
+razorpay==1.4.2
+setuptools==75.6.0

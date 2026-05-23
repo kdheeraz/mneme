@@ -43,6 +43,7 @@ def ensure_demo_user():
             name="Demo Workspace",
             owner_user_id=user.id,
             embedding_dim=settings.embedding_dim,
+            plan="pro",  # comp'd: demo ships 4 agents, above the free cap of 2
         )
         db.add(tenant)
         db.flush()

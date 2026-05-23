@@ -43,10 +43,12 @@ def _openai_embed(text: str, model: str, api_key: str, base_url: Optional[str] =
     return resp.data[0].embedding
 
 
-def _ollama_embed(text: str, model: str, base_url: str) -> List[float]:
-    """Calls Ollama's /api/embeddings endpoint. base_url example: http://host.docker.internal:11434"""
+def _ollama_embed(text: str, model: str, base_url: str, api_key: Optional[str] = None) -> List[float]:
+    """Calls Ollama's /api/embeddings endpoint. base_url example: http://host.docker.internal:11434
+    api_key is sent as a Bearer token for Ollama's hosted cloud; omit for a local server."""
     url = base_url.rstrip("/") + "/api/embeddings"
-    r = httpx.post(url, json={"model": model, "prompt": text}, timeout=60.0)
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else None
+    r = httpx.post(url, json={"model": model, "prompt": text}, headers=headers, timeout=60.0)
     r.raise_for_status()
     data = r.json()
     vec = data.get("embedding")
@@ -72,7 +74,7 @@ def embed_for_agent(text: str, agent: Optional[Agent], tenant_dim: int) -> List[
         vec = _openai_embed(text, model, api_key, base_url=base_url)
     elif provider == "ollama":
         url = base_url or DEFAULT_OLLAMA_URL
-        vec = _ollama_embed(text, model, url)
+        vec = _ollama_embed(text, model, url, api_key=api_key)
     else:
         return _fake_embed(text, tenant_dim)
 

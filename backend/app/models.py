@@ -31,6 +31,19 @@ class Tenant(Base):
     owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     embedding_dim = Column(Integer, default=lambda: settings.embedding_dim, nullable=False)
     plan = Column(String(32), default="free")
+    # Razorpay billing
+    razorpay_customer_id = Column(String(64), nullable=True)
+    razorpay_subscription_id = Column(String(64), nullable=True)
+    subscription_status = Column(String(32), nullable=True)  # created/authenticated/active/halted/cancelled
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class RazorpayPlan(Base):
+    """Caches the Razorpay plan_id for each of our plan tiers so we don't recreate them."""
+    __tablename__ = "razorpay_plans"
+    key = Column(String(32), primary_key=True)        # "pro" | "team"
+    razorpay_plan_id = Column(String(64), nullable=False)
+    amount = Column(Integer, nullable=False)          # paise
     created_at = Column(DateTime, server_default=func.now())
 
 
@@ -48,6 +61,12 @@ class Agent(Base):
     llm_model = Column(String(80), default="gpt-4o-mini")
     llm_api_key_enc = Column(Text)  # Fernet-encrypted
     llm_base_url = Column(String(255))  # for Ollama / OpenAI-compatible servers
+    # AWS Bedrock (llm_provider == "bedrock"): region + creds. Keys Fernet-encrypted.
+    # If the keys are blank, the Bedrock client falls back to the container's ambient
+    # AWS credentials (instance role / env).
+    aws_region = Column(String(40))
+    aws_access_key_enc = Column(Text)
+    aws_secret_key_enc = Column(Text)
 
     # Embedding config (must match tenant embedding_dim)
     embedding_provider = Column(String(32), default="fake")  # "fake" | "openai" | "ollama"
@@ -62,6 +81,10 @@ class Agent(Base):
 
     # Behavior flags
     auto_extract = Column(Boolean, default=False)  # if true, LLM extracts atomic memories from raw input
+    # Mem0-style write-time reconciliation: on each write, LLM decides ADD/UPDATE/DELETE/NOOP
+    reconcile = Column(Boolean, default=False)
+    # Graph memory: on each write, LLM extracts entities + relationships into the graph store
+    graph_enabled = Column(Boolean, default=False)
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
@@ -92,6 +115,8 @@ class Memory(Base):
     session_id = Column(String(120), index=True)
     content = Column(Text, nullable=False)
     kind = Column(String(32), default="semantic")  # semantic | episodic | procedural
+    # private = only the owning agent can read it; shared = any agent in the tenant can read it
+    scope = Column(String(16), default="private", index=True)
     meta = Column(JSON, default=dict)
     embedding = Column(Vector(settings.embedding_dim))
     # Lexical search column — Postgres auto-maintains it from `content`.
@@ -112,6 +137,41 @@ class Memory(Base):
         Index("ix_memories_tenant_agent", "tenant_id", "agent_id"),
         Index("ix_memories_tenant_user", "tenant_id", "user_id"),
         Index("ix_memories_content_tsv", "content_tsv", postgresql_using="gin"),
+    )
+
+
+class GraphEntity(Base):
+    """A node in the knowledge graph (person, org, technology, concept, ...)."""
+    __tablename__ = "graph_entities"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    agent_id = Column(String(120), index=True)
+    name = Column(String(200), nullable=False)            # canonical display name
+    norm_name = Column(String(200), nullable=False, index=True)  # lowercased for dedup
+    type = Column(String(40), default="other")            # person/org/place/technology/product/concept/event/other
+    mention_count = Column(Integer, default=1)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "agent_id", "norm_name", "type", name="uq_graph_entity"),
+    )
+
+
+class GraphRelation(Base):
+    """A directed edge: subject --predicate--> object."""
+    __tablename__ = "graph_relations"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    agent_id = Column(String(120), index=True)
+    subject_id = Column(UUID(as_uuid=True), ForeignKey("graph_entities.id", ondelete="CASCADE"), nullable=False, index=True)
+    predicate = Column(String(80), nullable=False)
+    object_id = Column(UUID(as_uuid=True), ForeignKey("graph_entities.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_memory_id = Column(UUID(as_uuid=True), ForeignKey("memories.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "subject_id", "predicate", "object_id", name="uq_graph_relation"),
     )
 
 

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from .db import get_db
 from .models import ApiKey, Tenant, Agent
+from .auth_user import decode_jwt
 
 
 def new_api_key(prefix: str = "mneme_sk") -> str:
@@ -40,6 +41,32 @@ def require_key(
     db.commit()
 
     return KeyContext(tenant=tenant, api_key=row, bound_agent_slug=row.agent_slug)
+
+
+def tenant_from_any_auth(
+    x_api_key: str = Header(default=""),
+    authorization: str = Header(default=""),
+    db: Session = Depends(get_db),
+) -> Tenant:
+    """Resolve a tenant from EITHER an API key or a JWT. Used for read-only,
+    tenant-scoped endpoints (traces, stats) that both the dashboard (JWT) and the
+    SDK (X-API-Key) need to call."""
+    if x_api_key:
+        row = db.query(ApiKey).filter(ApiKey.key == x_api_key).first()
+        if row:
+            t = db.query(Tenant).filter(Tenant.id == row.tenant_id).first()
+            if t:
+                return t
+    if authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1].strip()
+        try:
+            payload = decode_jwt(token)
+            t = db.query(Tenant).filter(Tenant.id == payload["tenant"]).first()
+            if t:
+                return t
+        except Exception:
+            pass
+    raise HTTPException(status_code=401, detail="auth required (X-API-Key or Bearer token)")
 
 
 def resolve_agent_for_write(ctx: KeyContext, body_agent_id: Optional[str], db: Session) -> Optional[Agent]:

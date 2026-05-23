@@ -25,10 +25,14 @@ DEMO_DATA = [
     ("sales-agent", "user_99", "Lead is from a fintech, 200 employees, evaluating us vs Pinecone.", "semantic"),
     ("sales-agent", "user_99", "Demo scheduled 2025-04-14 with VP of Engineering.", "episodic"),
     ("sales-agent", "user_99", "Decision driver: pricing model + on-prem option for EU.", "semantic"),
+]
 
-    # shared / cross-agent
+# Shared-pool memories — visible to EVERY agent in the tenant via the shared scope.
+# (agent, user_id, content, kind)
+SHARED_DATA = [
     ("research-bot", None, "Company-wide policy: redact PII before writing to long-term memory.", "procedural"),
-    ("support-agent", None, "Company-wide policy: redact PII before writing to long-term memory.", "procedural"),
+    ("support-agent", None, "Company HQ is in Bengaluru; business hours are 9am-6pm IST.", "semantic"),
+    ("sales-agent", None, "Standard discount ceiling for new deals is 20% without VP approval.", "procedural"),
 ]
 
 
@@ -58,6 +62,7 @@ def run():
                 session_id=f"sess_{(i // 3) + 1}",
                 content=content,
                 kind=kind,
+                scope="private",
                 meta={"source": "seed"},
                 importance=round(random.uniform(0.4, 0.95), 2),
                 embedding=vec,
@@ -66,8 +71,26 @@ def run():
                 last_accessed_at=created,
                 access_count=random.randint(0, 12),
             ))
+        for agent, user_id, content, kind in SHARED_DATA:
+            created = now - timedelta(hours=random.uniform(0.5, 240))
+            vec = embed_for_agent(content, None, tenant.embedding_dim)
+            db.add(Memory(
+                tenant_id=tenant.id,
+                agent_id=agent,
+                user_id=user_id,
+                content=content,
+                kind=kind,
+                scope="shared",
+                meta={"source": "seed"},
+                importance=round(random.uniform(0.6, 0.95), 2),
+                embedding=vec,
+                created_at=created,
+                updated_at=created,
+                last_accessed_at=created,
+                access_count=random.randint(0, 12),
+            ))
         db.commit()
-        print(f"[seed] inserted {len(DEMO_DATA)} demo memories")
+        print(f"[seed] inserted {len(DEMO_DATA)} private + {len(SHARED_DATA)} shared memories")
     finally:
         db.close()
 

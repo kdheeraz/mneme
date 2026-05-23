@@ -4,12 +4,11 @@ The LLM is asked to produce a strict JSON object with a `memories` array,
 each item having `content` and `kind`. We sanitize/parse robustly because
 small models occasionally wrap the JSON in markdown or add preamble."""
 from __future__ import annotations
-import json
-import re
 from typing import List, Dict, Any, Tuple
 
 from .models import Agent
 from .llm import chat
+from .jsonutil import parse_json_lenient
 
 
 SYSTEM = (
@@ -40,27 +39,6 @@ def _format_conversation(messages: List[Dict[str, str]] | None, text: str | None
     return text or ""
 
 
-_JSON_FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE | re.MULTILINE)
-
-
-def _parse_json_lenient(raw: str) -> Dict[str, Any]:
-    """Try strict JSON first; fall back to extracting the first {...} block."""
-    s = _JSON_FENCE.sub("", raw).strip()
-    try:
-        return json.loads(s)
-    except json.JSONDecodeError:
-        pass
-    # find first '{' and last '}' and try that slice
-    start = s.find("{")
-    end = s.rfind("}")
-    if start != -1 and end > start:
-        try:
-            return json.loads(s[start:end + 1])
-        except json.JSONDecodeError:
-            pass
-    raise ValueError(f"could not parse JSON from LLM response: {raw[:400]}")
-
-
 def extract_memories(
     agent: Agent,
     messages: List[Dict[str, str]] | None,
@@ -87,9 +65,10 @@ def extract_memories(
             {"role": "system", "content": SYSTEM},
             {"role": "user", "content": user_prompt},
         ],
-        max_tokens=800,
+        max_tokens=1000,
+        json_mode=True,
     )
-    parsed = _parse_json_lenient(raw)
+    parsed = parse_json_lenient(raw)
     raw_mems = parsed.get("memories") or []
 
     valid_kinds = {"semantic", "episodic", "procedural"}

@@ -21,6 +21,15 @@ class Settings(BaseSettings):
 
     seed_on_boot: bool = False
 
+    # Razorpay billing (test mode by default)
+    razorpay_key_id: str = ""
+    razorpay_key_secret: str = ""
+    razorpay_webhook_secret: str = ""
+
+    # Comma-separated browser origins allowed to call the API. "*" = allow all (dev default).
+    # In production set this to your dashboard origin, e.g. "https://mneme.example.com".
+    cors_origins: str = "*"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
