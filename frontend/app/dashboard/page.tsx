@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { api, auth } from "@/lib/api";
 
-type Tab = "overview" | "agents" | "memories" | "search" | "ingest" | "traces";
+type Tab = "overview" | "agents" | "memories" | "search" | "ingest" | "graph" | "traces" | "billing";
 
 export default function Dashboard() {
   const [tab, setTab] = useState<Tab>("overview");
@@ -14,7 +14,9 @@ export default function Dashboard() {
     { id: "memories", label: "Memories" },
     { id: "search", label: "Live Search" },
     { id: "ingest", label: "Ingest" },
+    { id: "graph", label: "Graph" },
     { id: "traces", label: "Traces" },
+    { id: "billing", label: "Billing" },
   ];
 
   return (
@@ -37,7 +39,157 @@ export default function Dashboard() {
       {tab === "memories" && <Memories />}
       {tab === "search" && <Search />}
       {tab === "ingest" && <Ingest />}
+      {tab === "graph" && <GraphView />}
       {tab === "traces" && <Traces />}
+      {tab === "billing" && <Billing />}
+    </div>
+  );
+}
+
+// ===================== Billing =====================
+
+function loadRazorpay(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if ((window as any).Razorpay) return resolve(true);
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
+
+function Billing() {
+  const { data: plans, mutate: mutatePlans } = useSWR("plans", () => api.plans());
+  const { data: status, mutate: mutateStatus } = useSWR("billingStatus", () => api.billingStatus());
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const upgrade = async (planKey: string) => {
+    setErr(null);
+    setMsg(null);
+    setBusy(planKey);
+    try {
+      const ok = await loadRazorpay();
+      if (!ok) throw new Error("failed to load Razorpay Checkout");
+      const sub = await api.subscribe(planKey);
+      const rzp = new (window as any).Razorpay({
+        key: sub.key_id,
+        subscription_id: sub.subscription_id,
+        name: "Mneme",
+        description: `${planKey} plan`,
+        handler: async () => {
+          setMsg("Payment authorized — your plan will activate once Razorpay confirms (webhook).");
+          await mutateStatus();
+          await mutatePlans();
+        },
+        modal: { ondismiss: () => setBusy(null) },
+        theme: { color: "#0b1f3a" },
+      });
+      rzp.on("payment.failed", (resp: any) => setErr(resp?.error?.description || "payment failed"));
+      rzp.open();
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      {status && !status.configured && (
+        <div className="panel p-3 text-xs text-amber-700 bg-amber-50 border-amber-200">
+          Billing is not fully configured — set <span className="mono">RAZORPAY_KEY_SECRET</span> (and{" "}
+          <span className="mono">RAZORPAY_WEBHOOK_SECRET</span>) in <span className="mono">.env</span> to enable checkout.
+        </div>
+      )}
+
+      <div className="panel p-4 flex items-center justify-between">
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-gray-500">Current plan</div>
+          <div className="text-xl font-bold text-ink mt-0.5">
+            {(status?.plan || "free").toUpperCase()}
+          </div>
+        </div>
+        {status?.subscription_status && (
+          <span className="tag" style={{ background: "#dcfce7", color: "#14532d" }}>
+            {status.subscription_status}
+          </span>
+        )}
+      </div>
+
+      {status?.limits && (
+        <div className="panel p-4 space-y-3">
+          <div className="text-[11px] uppercase tracking-wider text-gray-500">Usage on current plan</div>
+          {["agents", "memories"].map((res) => {
+            const used = status.usage?.[res] ?? 0;
+            const cap = status.limits?.[res];
+            const pct = cap ? Math.min(100, (used / cap) * 100) : 0;
+            const ratio = cap ? used / cap : 0;
+            const bar = used >= cap ? "bg-red-600" : ratio >= 0.8 ? "bg-amber-500" : "bg-accent";
+            return (
+              <div key={res}>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="capitalize text-gray-700">{res}</span>
+                  <span className="mono text-gray-600">
+                    {used.toLocaleString("en-IN")}
+                    {cap != null ? ` / ${cap.toLocaleString("en-IN")}` : " (unlimited)"}
+                  </span>
+                </div>
+                <div className="bg-gray-100 rounded h-2.5 overflow-hidden">
+                  <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
+                </div>
+                {cap != null && used >= cap && (
+                  <p className="text-[11px] text-red-600 mt-1">
+                    Limit reached — new {res} are blocked until you upgrade.
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {msg && <p className="text-green-700 text-xs">{msg}</p>}
+      {err && <p className="text-red-600 text-xs">{err}</p>}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {(plans ?? []).map((p: any) => (
+          <div key={p.key} className={`panel p-5 ${p.current ? "border-ink" : ""}`}>
+            <div className="flex items-baseline justify-between">
+              <h3 className="text-lg font-bold text-ink">{p.name}</h3>
+              {p.current && <span className="tag">current</span>}
+            </div>
+            <div className="mt-2 text-2xl font-bold">
+              {p.amount === 0 ? "Free" : `₹${(p.amount / 100).toLocaleString("en-IN")}`}
+              {p.amount > 0 && <span className="text-sm font-normal text-gray-500">/mo</span>}
+            </div>
+            <ul className="mt-3 text-xs text-gray-600 space-y-1">
+              <li>• {p.limits.agents.toLocaleString("en-IN")} agents</li>
+              <li>• {p.limits.memories.toLocaleString("en-IN")} memories</li>
+            </ul>
+            {p.key !== "free" && !p.current && (
+              <button
+                onClick={() => upgrade(p.key)}
+                disabled={busy === p.key || (status && !status.configured)}
+                className="mt-4 w-full bg-ink text-white rounded py-2 text-sm font-semibold disabled:opacity-50"
+              >
+                {busy === p.key ? "Opening…" : `Upgrade to ${p.name}`}
+              </button>
+            )}
+            {p.current && (
+              <div className="mt-4 text-center text-xs text-gray-500">You're on this plan</div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <p className="text-[11px] text-gray-500">
+        Test mode — use Razorpay's test cards (e.g. card 4111 1111 1111 1111, any future expiry/CVC).
+        Plan activates when the <span className="mono">subscription.activated/charged</span> webhook arrives.
+      </p>
     </div>
   );
 }
@@ -50,8 +202,16 @@ function Overview() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard label="Agents" value={stats.total_agents} />
-        <StatCard label="Total memories" value={stats.total_memories} />
+        <StatCard
+          label="Agents"
+          value={stats.total_agents}
+          sub={stats.limits?.agents != null ? `of ${stats.limits.agents.toLocaleString("en-IN")} · ${stats.plan}` : undefined}
+        />
+        <StatCard
+          label="Total memories"
+          value={stats.total_memories}
+          sub={stats.limits?.memories != null ? `of ${stats.limits.memories.toLocaleString("en-IN")}` : undefined}
+        />
         <StatCard label="Ops last 24h" value={stats.recent_ops_24h} />
         <StatCard
           label="By kind"
@@ -347,6 +507,9 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
     llm_model: agent.llm_model,
     llm_api_key: "",
     llm_base_url: agent.llm_base_url || "",
+    aws_region: agent.aws_region || "",
+    aws_access_key: "",
+    aws_secret_key: "",
     embedding_provider: agent.embedding_provider,
     embedding_model: agent.embedding_model,
     embedding_api_key: "",
@@ -355,13 +518,18 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
     rerank_model: agent.rerank_model || "rerank-english-v3.0",
     rerank_api_key: "",
     auto_extract: agent.auto_extract,
+    reconcile: agent.reconcile,
+    graph_enabled: agent.graph_enabled,
   });
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
   const onLlmProvider = (v: string) => {
     const base = v === "ollama" && !edit.llm_base_url ? "http://host.docker.internal:11434" : edit.llm_base_url;
-    const model = v === "ollama" ? "llama3.2" : edit.llm_model;
+    const model =
+      v === "ollama" ? "llama3.2" :
+      v === "bedrock" && !edit.llm_model ? "anthropic.claude-3-5-sonnet-20241022-v2:0" :
+      edit.llm_model;
     setEdit({ ...edit, llm_provider: v as any, llm_base_url: base, llm_model: model });
   };
   const onEmbProvider = (v: string) => {
@@ -373,6 +541,8 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
   const save = async () => {
     const patch: any = { ...edit };
     if (!patch.llm_api_key) delete patch.llm_api_key;
+    if (!patch.aws_access_key) delete patch.aws_access_key;
+    if (!patch.aws_secret_key) delete patch.aws_secret_key;
     if (!patch.embedding_api_key) delete patch.embedding_api_key;
     if (!patch.rerank_api_key) delete patch.rerank_api_key;
     await api.updateAgent(agent.slug, patch);
@@ -426,7 +596,7 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
           <Sel
             label="LLM provider"
             v={edit.llm_provider}
-            options={["none", "openai", "anthropic", "ollama"]}
+            options={["none", "openai", "anthropic", "bedrock", "ollama"]}
             on={onLlmProvider}
           />
           <Inp label="LLM model" v={edit.llm_model} on={(v) => setEdit({ ...edit, llm_model: v })} mono />
@@ -441,7 +611,7 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
               />
             </div>
           )}
-          {edit.llm_provider !== "none" && edit.llm_provider !== "ollama" && (
+          {edit.llm_provider !== "none" && edit.llm_provider !== "ollama" && edit.llm_provider !== "bedrock" && (
             <div className="col-span-2">
               <Inp
                 label={`LLM API key  ${agent.llm_api_key_set ? "(set ✓)" : ""}`}
@@ -451,6 +621,30 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
                 mono
               />
             </div>
+          )}
+          {edit.llm_provider === "bedrock" && (
+            <>
+              <Inp label="AWS region" v={edit.aws_region} on={(v) => setEdit({ ...edit, aws_region: v })} placeholder="us-east-1" mono />
+              <div />
+              <div className="col-span-2">
+                <Inp
+                  label={`AWS access key  ${agent.aws_access_key_set ? "(set ✓)" : ""}`}
+                  v={edit.aws_access_key}
+                  on={(v) => setEdit({ ...edit, aws_access_key: v })}
+                  placeholder="AKIA…  (blank = keep current / use ambient AWS creds)"
+                  mono
+                />
+              </div>
+              <div className="col-span-2">
+                <Inp
+                  label={`AWS secret key  ${agent.aws_secret_key_set ? "(set ✓)" : ""}`}
+                  v={edit.aws_secret_key}
+                  on={(v) => setEdit({ ...edit, aws_secret_key: v })}
+                  placeholder="blank = keep current / use ambient AWS creds"
+                  mono
+                />
+              </div>
+            </>
           )}
 
           <Sel
@@ -509,6 +703,22 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
               onChange={(e) => setEdit({ ...edit, auto_extract: e.target.checked })}
             />
             Auto-extract memories from raw input (uses agent's LLM)
+          </label>
+          <label className="flex items-center gap-2 text-xs text-gray-600 col-span-2">
+            <input
+              type="checkbox"
+              checked={edit.reconcile}
+              onChange={(e) => setEdit({ ...edit, reconcile: e.target.checked })}
+            />
+            Write-time reconcile (LLM picks ADD / UPDATE / DELETE / NOOP per write — Mem0-style)
+          </label>
+          <label className="flex items-center gap-2 text-xs text-gray-600 col-span-2">
+            <input
+              type="checkbox"
+              checked={edit.graph_enabled}
+              onChange={(e) => setEdit({ ...edit, graph_enabled: e.target.checked })}
+            />
+            Graph memory (LLM extracts entities + relationships on each write)
           </label>
         </div>
 
@@ -629,10 +839,13 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
     name: "",
     slug: "",
     description: "",
-    llm_provider: "none" as "none" | "openai" | "anthropic" | "ollama",
+    llm_provider: "none" as "none" | "openai" | "anthropic" | "bedrock" | "ollama",
     llm_model: "gpt-4o-mini",
     llm_api_key: "",
     llm_base_url: "",
+    aws_region: "",
+    aws_access_key: "",
+    aws_secret_key: "",
     embedding_provider: "fake" as "fake" | "openai" | "ollama",
     embedding_model: "text-embedding-3-small",
     embedding_api_key: "",
@@ -641,6 +854,8 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
     rerank_model: "rerank-english-v3.0",
     rerank_api_key: "",
     auto_extract: false,
+    reconcile: false,
+    graph_enabled: false,
   });
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -658,6 +873,7 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
     const model =
       x === "ollama" ? "llama3.2" :
       x === "anthropic" ? "claude-3-5-sonnet-latest" :
+      x === "bedrock" ? "anthropic.claude-3-5-sonnet-20241022-v2:0" :
       "gpt-4o-mini";
     setV({ ...v, llm_provider: x as any, llm_base_url: base, llm_model: model });
   };
@@ -674,6 +890,9 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
       const payload: any = { ...v };
       if (!payload.slug) delete payload.slug;
       if (!payload.llm_api_key) delete payload.llm_api_key;
+      if (!payload.aws_access_key) delete payload.aws_access_key;
+      if (!payload.aws_secret_key) delete payload.aws_secret_key;
+      if (!payload.aws_region) delete payload.aws_region;
       if (!payload.embedding_api_key) delete payload.embedding_api_key;
       if (!payload.llm_base_url) delete payload.llm_base_url;
       if (!payload.embedding_base_url) delete payload.embedding_base_url;
@@ -700,7 +919,7 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
           <Inp label="Description" v={v.description} on={(x) => setV({ ...v, description: x })} />
         </div>
 
-        <Sel label="LLM provider" v={v.llm_provider} options={["none", "openai", "anthropic", "ollama"]} on={onLlm} />
+        <Sel label="LLM provider" v={v.llm_provider} options={["none", "openai", "anthropic", "bedrock", "ollama"]} on={onLlm} />
         <Inp label="LLM model" v={v.llm_model} on={(x) => setV({ ...v, llm_model: x })} mono />
         {v.llm_provider === "ollama" && (
           <div className="col-span-2">
@@ -717,6 +936,18 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
           <div className="col-span-2">
             <Inp label="LLM API key (optional)" v={v.llm_api_key} on={(x) => setV({ ...v, llm_api_key: x })} mono placeholder="sk-..." />
           </div>
+        )}
+        {v.llm_provider === "bedrock" && (
+          <>
+            <Inp label="AWS region" v={v.aws_region} on={(x) => setV({ ...v, aws_region: x })} mono placeholder="us-east-1" />
+            <div />
+            <div className="col-span-2">
+              <Inp label="AWS access key (blank = ambient creds)" v={v.aws_access_key} on={(x) => setV({ ...v, aws_access_key: x })} mono placeholder="AKIA..." />
+            </div>
+            <div className="col-span-2">
+              <Inp label="AWS secret key (blank = ambient creds)" v={v.aws_secret_key} on={(x) => setV({ ...v, aws_secret_key: x })} mono placeholder="..." />
+            </div>
+          </>
         )}
 
         <Sel label="Embedding provider" v={v.embedding_provider} options={["fake", "openai", "ollama"]} on={onEmb} />
@@ -753,6 +984,22 @@ function CreateAgentForm({ onClose, onCreated }: { onClose: () => void; onCreate
             onChange={(e) => setV({ ...v, auto_extract: e.target.checked })}
           />
           Auto-extract memories from raw input (uses agent's LLM)
+        </label>
+        <label className="flex items-center gap-2 text-xs text-gray-600 col-span-2">
+          <input
+            type="checkbox"
+            checked={v.reconcile}
+            onChange={(e) => setV({ ...v, reconcile: e.target.checked })}
+          />
+          Write-time reconcile (LLM picks ADD / UPDATE / DELETE / NOOP per write — Mem0-style)
+        </label>
+        <label className="flex items-center gap-2 text-xs text-gray-600 col-span-2">
+          <input
+            type="checkbox"
+            checked={v.graph_enabled}
+            onChange={(e) => setV({ ...v, graph_enabled: e.target.checked })}
+          />
+          Graph memory (LLM extracts entities + relationships on each write)
         </label>
       </div>
       {err && <p className="text-red-600 text-xs mt-3">{err}</p>}
@@ -839,6 +1086,9 @@ function Memories() {
               <div className="text-sm">{m.content}</div>
               <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px] text-gray-500 mono">
                 <span className="tag">{m.kind}</span>
+                {m.scope === "shared" && (
+                  <span className="tag" style={{ background: "#dbeafe", color: "#1e3a8a" }}>shared</span>
+                )}
                 {m.agent_id && <span>agent:{m.agent_id}</span>}
                 {m.user_id && <span>user:{m.user_id}</span>}
                 {m.session_id && <span>sess:{m.session_id}</span>}
@@ -881,6 +1131,7 @@ function Search() {
   const [mode, setMode] = useState<"hybrid" | "vector" | "lexical">("hybrid");
   const [rerank, setRerank] = useState(false);
   const [rewrite, setRewrite] = useState(false);
+  const [useGraph, setUseGraph] = useState(false);
   const [res, setRes] = useState<any>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -898,6 +1149,7 @@ function Search() {
         mode,
         rerank,
         rewrite,
+        use_graph: useGraph,
         limit: 10,
       });
       setRes(r);
@@ -906,7 +1158,7 @@ function Search() {
     } finally {
       setBusy(false);
     }
-  }, [q, agent, user, crossAgent, recency, mode, rerank, rewrite]);
+  }, [q, agent, user, crossAgent, recency, mode, rerank, rewrite, useGraph]);
 
   return (
     <div className="space-y-4">
@@ -922,6 +1174,7 @@ function Search() {
           <label className="flex items-center gap-2 text-xs text-gray-600">
             <input type="checkbox" checked={crossAgent} onChange={(e) => setCrossAgent(e.target.checked)} />
             Cross-agent search
+            <span className="tag" style={{ background: "#fef3c7", color: "#92400e" }}>beta</span>
           </label>
           <label className="flex items-center gap-2 text-xs text-gray-600">
             <input type="checkbox" checked={rerank} onChange={(e) => setRerank(e.target.checked)} />
@@ -930,6 +1183,10 @@ function Search() {
           <label className="flex items-center gap-2 text-xs text-gray-600">
             <input type="checkbox" checked={rewrite} onChange={(e) => setRewrite(e.target.checked)} />
             Query rewrite (LLM expansion)  <span className="text-gray-400">(requires LLM on agent)</span>
+          </label>
+          <label className="flex items-center gap-2 text-xs text-gray-600">
+            <input type="checkbox" checked={useGraph} onChange={(e) => setUseGraph(e.target.checked)} />
+            Graph-augmented  <span className="text-gray-400">(links query entities, traverses the graph)</span>
           </label>
 
           <div>
@@ -1007,6 +1264,11 @@ function Search() {
                           lex #{h.lexical_rank} · score {h.lexical_score.toFixed(3)}
                         </span>
                       )}
+                      {h.graph_rank != null && (
+                        <span className="tag" style={{ background: "#dcfce7", color: "#14532d" }}>
+                          graph #{h.graph_rank} · score {h.graph_score.toFixed(1)}
+                        </span>
+                      )}
                       {h.rerank_score != null && (
                         <span className="tag" style={{ background: "#ede9fe", color: "#5b21b6" }}>
                           rerank {h.rerank_score.toFixed(3)}
@@ -1018,6 +1280,9 @@ function Search() {
                       {h.memory.agent_id && `agent:${h.memory.agent_id} `}
                       {h.memory.user_id && `user:${h.memory.user_id} `}
                       <span className="tag ml-1">{h.memory.kind}</span>
+                      {h.memory.scope === "shared" && (
+                        <span className="tag ml-1" style={{ background: "#dbeafe", color: "#1e3a8a" }}>shared</span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1037,6 +1302,7 @@ function Ingest() {
   const [user, setUser] = useState("user_42");
   const [session, setSession] = useState("");
   const [persist, setPersist] = useState(true);
+  const [shared, setShared] = useState(false);
   const [res, setRes] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -1050,6 +1316,7 @@ function Ingest() {
         text,
         user_id: user || undefined,
         session_id: session || undefined,
+        scope: shared ? "shared" : "private",
         persist,
       });
       setRes(r);
@@ -1091,6 +1358,20 @@ function Ingest() {
             />
             Persist extracted memories (uncheck for dry-run)
           </label>
+          <label className="flex items-center gap-2 text-xs text-gray-600">
+            <input
+              type="checkbox"
+              checked={shared}
+              onChange={(e) => setShared(e.target.checked)}
+            />
+            Mark as <b>shared</b> (visible to all agents)
+            <span className="tag" style={{ background: "#fef3c7", color: "#92400e" }}>beta</span>
+          </label>
+          {shared && (
+            <p className="text-[11px] text-amber-700 -mt-1">
+              Cross-agent semantic search only works when agents share the same embedding model.
+            </p>
+          )}
           <button
             onClick={run}
             disabled={busy || !text.trim()}
@@ -1114,6 +1395,9 @@ function Ingest() {
             <>
               <div className="text-xs text-gray-500 mb-3 mono">
                 {res.extracted} extracted · {res.persisted} persisted · {res.latency_ms}ms
+                {res.operations && Object.keys(res.operations).length > 0 && (
+                  <span> · ops: {Object.entries(res.operations).map(([k, n]) => `${k}:${n}`).join("  ")}</span>
+                )}
               </div>
               <div className="space-y-2">
                 {(res.memories || []).map((m: any) => (
@@ -1145,6 +1429,178 @@ function Ingest() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ===================== Graph =====================
+
+const TYPE_COLORS: Record<string, string> = {
+  person: "#2563eb", org: "#7c3aed", place: "#059669", technology: "#ea580c",
+  product: "#db2777", concept: "#0891b2", event: "#ca8a04", other: "#6b7280",
+};
+
+function computeLayout(data: any) {
+  const W = 820, H = 560;
+  if (!data || !data.entities?.length) return { nodes: [], links: [], W, H };
+  const ents = data.entities;
+  const idToIdx = new Map<string, number>(ents.map((e: any, i: number) => [e.id, i]));
+  const nodes = ents.map((e: any, i: number) => ({
+    id: e.id, name: e.name, type: e.type, count: e.mention_count || 1,
+    x: W / 2 + Math.cos(i * 2.4) * 160 + (Math.random() - 0.5) * 30,
+    y: H / 2 + Math.sin(i * 2.4) * 160 + (Math.random() - 0.5) * 30,
+  }));
+  const links = (data.relations || [])
+    .filter((r: any) => idToIdx.has(r.subject_id) && idToIdx.has(r.object_id))
+    .map((r: any) => ({ source: idToIdx.get(r.subject_id)!, target: idToIdx.get(r.object_id)!, predicate: r.predicate }));
+
+  const n = nodes.length;
+  const k = Math.sqrt((W * H) / n) * 0.55;
+  let temp = W / 8;
+  for (let it = 0; it < 300; it++) {
+    const disp = nodes.map(() => ({ x: 0, y: 0 }));
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        let dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+        const d = Math.hypot(dx, dy) || 0.01;
+        const rep = (k * k) / d, ux = dx / d, uy = dy / d;
+        disp[i].x += ux * rep; disp[i].y += uy * rep;
+        disp[j].x -= ux * rep; disp[j].y -= uy * rep;
+      }
+    }
+    for (const l of links) {
+      const a = nodes[l.source], b = nodes[l.target];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      const d = Math.hypot(dx, dy) || 0.01;
+      const att = (d * d) / k, ux = dx / d, uy = dy / d;
+      disp[l.source].x -= ux * att; disp[l.source].y -= uy * att;
+      disp[l.target].x += ux * att; disp[l.target].y += uy * att;
+    }
+    for (let i = 0; i < n; i++) {
+      disp[i].x += (W / 2 - nodes[i].x) * 0.03;
+      disp[i].y += (H / 2 - nodes[i].y) * 0.03;
+      const d = Math.hypot(disp[i].x, disp[i].y) || 0.01;
+      nodes[i].x += (disp[i].x / d) * Math.min(d, temp);
+      nodes[i].y += (disp[i].y / d) * Math.min(d, temp);
+      nodes[i].x = Math.max(30, Math.min(W - 30, nodes[i].x));
+      nodes[i].y = Math.max(30, Math.min(H - 30, nodes[i].y));
+    }
+    temp *= 0.97;
+  }
+  return { nodes, links, W, H };
+}
+
+function GraphView() {
+  const { data, mutate, isLoading } = useSWR("graph", () => api.graph(), { revalidateOnFocus: false });
+  const [rebuilding, setRebuilding] = useState(false);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const layout = useMemo(() => computeLayout(data), [data]);
+
+  const neighbors = useMemo(() => {
+    const s = new Set<number>();
+    if (selected == null) return s;
+    s.add(selected);
+    for (const l of layout.links) {
+      if (l.source === selected) s.add(l.target);
+      if (l.target === selected) s.add(l.source);
+    }
+    return s;
+  }, [selected, layout]);
+
+  const rebuild = async () => {
+    setRebuilding(true);
+    setErr(null);
+    try {
+      await api.rebuildGraph();
+      await mutate();
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setRebuilding(false);
+    }
+  };
+
+  const dim = (i: number) => selected != null && !neighbors.has(i);
+
+  return (
+    <div className="space-y-4">
+      <ActiveKeyBanner />
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          {layout.nodes.length} entities · {layout.links.length} relations
+        </div>
+        <div className="flex items-center gap-2">
+          {selected != null && (
+            <button onClick={() => setSelected(null)} className="text-xs text-gray-500 hover:text-gray-800">
+              clear selection
+            </button>
+          )}
+          <button
+            onClick={rebuild}
+            disabled={rebuilding}
+            className="text-xs border border-ink text-ink px-3 py-1.5 rounded font-semibold hover:bg-white disabled:opacity-50"
+          >
+            {rebuilding ? "Rebuilding…" : "Rebuild from memories"}
+          </button>
+        </div>
+      </div>
+      {err && <p className="text-red-600 text-xs">{err}</p>}
+
+      <div className="flex flex-wrap gap-3 text-[11px] text-gray-600">
+        {Object.entries(TYPE_COLORS).map(([t, c]) => (
+          <span key={t} className="flex items-center gap-1">
+            <span style={{ background: c }} className="inline-block w-3 h-3 rounded-full" /> {t}
+          </span>
+        ))}
+      </div>
+
+      <div className="panel p-2" style={{ overflow: "hidden" }}>
+        {isLoading && <p className="text-sm text-gray-500 p-4">Loading graph…</p>}
+        {!isLoading && layout.nodes.length === 0 && (
+          <p className="text-sm text-gray-500 p-4">
+            No graph yet. Enable <b>Graph memory</b> on the active agent and ingest/add some memories,
+            or click <b>Rebuild from memories</b> to extract from existing ones (agent needs an LLM).
+          </p>
+        )}
+        {layout.nodes.length > 0 && (
+          <svg
+            viewBox={`0 0 ${layout.W} ${layout.H}`}
+            width="100%"
+            height={540}
+            preserveAspectRatio="xMidYMid meet"
+            style={{ display: "block", maxWidth: "100%", overflow: "hidden" }}
+          >
+            {layout.links.map((l: any, i: number) => {
+              const a = layout.nodes[l.source], b = layout.nodes[l.target];
+              const faded = selected != null && !(neighbors.has(l.source) && neighbors.has(l.target));
+              return (
+                <g key={i} opacity={faded ? 0.12 : 0.7}>
+                  <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="#9ca3af" strokeWidth={1} />
+                  <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2} fontSize={8} fill="#6b7280" textAnchor="middle">
+                    {l.predicate}
+                  </text>
+                </g>
+              );
+            })}
+            {layout.nodes.map((nd: any, i: number) => {
+              const r = Math.min(8 + nd.count * 2, 18);
+              return (
+                <g key={nd.id} opacity={dim(i) ? 0.2 : 1} style={{ cursor: "pointer" }}
+                   onClick={() => setSelected(selected === i ? null : i)}>
+                  <circle cx={nd.x} cy={nd.y} r={r} fill={TYPE_COLORS[nd.type] || TYPE_COLORS.other}
+                          stroke="#fff" strokeWidth={1.5} />
+                  <text x={nd.x} y={nd.y - r - 3} fontSize={10} fill="#111827" textAnchor="middle" fontWeight={600}>
+                    {nd.name}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        )}
+      </div>
+      <p className="text-[11px] text-gray-500">Click a node to highlight its connections. Node size = mention count.</p>
     </div>
   );
 }

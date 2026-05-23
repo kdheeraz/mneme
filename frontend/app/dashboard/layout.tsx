@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/api";
+import { auth, api } from "@/lib/api";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -15,9 +15,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace("/");
       return;
     }
-    setTenant(auth.tenant());
-    setUser(auth.user());
-    setReady(true);
+    (async () => {
+      // Auto-select an active API key so the Memories/Search/Ingest tabs work
+      // immediately. Prefer a tenant-wide key (sees all agents); else first key.
+      if (!auth.apiKey()) {
+        try {
+          const keys = await api.listKeys();
+          const chosen = keys.find((k: any) => !k.agent_slug) || keys[0];
+          if (chosen) auth.setApiKey(chosen.key);
+        } catch {
+          /* ignore — banner will prompt the user */
+        }
+      }
+      setTenant(auth.tenant());
+      setUser(auth.user());
+      setReady(true);
+    })();
   }, [router]);
 
   if (!ready) return null;

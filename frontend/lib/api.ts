@@ -121,4 +121,13 @@ export const api = {
     jreq<any>("/v1/memories/ingest", { method: "POST", body: JSON.stringify(body) }, false),
   consolidate: (body: any) =>
     jreq<any>("/v1/admin/consolidate", { method: "POST", body: JSON.stringify(body) }),
+  graph: (agent_slug?: string) =>
+    jreq<any>(`/v1/graph${agent_slug ? `?agent_id=${agent_slug}` : ""}`, {}, false),
+  rebuildGraph: () => jreq<any>("/v1/graph/rebuild", { method: "POST" }, false),
+
+  // billing (JWT)
+  plans: () => jreq<any[]>("/v1/billing/plans"),
+  billingStatus: () => jreq<any>("/v1/billing/status"),
+  subscribe: (plan: string) =>
+    jreq<any>("/v1/billing/subscribe", { method: "POST", body: JSON.stringify({ plan }) }),
 };
