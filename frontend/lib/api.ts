@@ -46,6 +46,9 @@ export const auth = {
 async function jreq<T>(path: string, init: RequestInit = {}, useJwt = true): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    // Bypass ngrok's free-tier browser-warning interstitial so fetches get JSON, not HTML.
+    // Ignored by every other server, so it's safe to always send.
+    "ngrok-skip-browser-warning": "true",
     ...((init.headers as Record<string, string>) || {}),
   };
   if (useJwt) {

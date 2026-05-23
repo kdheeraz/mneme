@@ -1,0 +1,15 @@
+# Local-only reverse proxy for an ngrok demo: unifies the dev api + web behind ONE
+# plain-HTTP port (8080), so a single ngrok tunnel serves the whole app.
+# ngrok terminates TLS, so this listens on plain :80 inside the container.
+#   docker run --rm -d --name mneme-tunnel-proxy --network mneme_default -p 8080:80 \
+#     -v "$PWD/Caddyfile.tunnel:/etc/caddy/Caddyfile:ro" caddy:2
+#   ngrok http 8080
+:80 {
+	@api path /v1/* /docs /docs/* /openapi.json /redoc /health
+	handle @api {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

@@ -61,7 +61,7 @@ services:
     depends_on:
       - api
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: ${WEB_API_URL:-http://localhost:8000}
       API_URL_INTERNAL: http://api:8000
       NEXT_PUBLIC_RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
     ports:
