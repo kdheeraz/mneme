@@ -40,6 +40,9 @@ services:
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-fake}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
       EMBEDDING_DIM: ${EMBEDDING_DIM:-1536}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
       SEED_ON_BOOT: "true"
     ports:
       - "8000:8000"
@@ -60,6 +63,7 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
       API_URL_INTERNAL: http://api:8000
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
     ports:
       - "3000:3000"
     volumes:

@@ -1,0 +1,19 @@
+# Auto-HTTPS reverse proxy. Caddy fetches + renews a Let's Encrypt cert for $DOMAIN
+# automatically (needs ports 80+443 open and DNS for $DOMAIN pointing at this VM).
+# One public origin: /v1, /docs, /health → API; everything else → the dashboard.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode gzip
+
+	@api path /v1/* /docs /docs/* /openapi.json /redoc /health
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

@@ -1,0 +1,112 @@
+# Production stack for a single VM (e.g. Oracle Cloud Always Free arm64).
+#
+# Architecture:
+#   caddy ── HTTPS ──┬─ /v1,/docs,/health → api:8000  (FastAPI)
+#                    └─ everything else   → web:3000  (Next.js, prod build)
+#   api → db (pgvector) + redis + ollama (embeddings only) + Ollama Cloud (LLM, remote)
+#
+# The heavy LLM runs on Ollama Cloud (remote, set per-agent). The local `ollama`
+# service serves ONLY the small embedding model (nomic-embed-text, CPU-fine).
+#
+# Usage:
+#   cp .env.example .env   # then fill it in (see DEPLOY.md)
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml exec ollama ollama pull nomic-embed-text
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: mneme-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mneme
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: mneme
+    volumes:
+      - mneme_db:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mneme -d mneme"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    # No host port — reachable only inside the compose network.
+
+  redis:
+    image: redis:7-alpine
+    container_name: mneme-redis
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mneme-ollama
+    restart: unless-stopped
+    volumes:
+      - mneme_ollama:/root/.ollama
+    # Embeddings only (nomic-embed-text). Pull it once after first boot:
+    #   docker compose -f docker-compose.prod.yml exec ollama ollama pull nomic-embed-text
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mneme-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      ollama:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+psycopg://mneme:${POSTGRES_PASSWORD}@db:5432/mneme
+      REDIS_URL: redis://redis:6379/0
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-fake}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      EMBEDDING_DIM: ${EMBEDDING_DIM:-768}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      FERNET_KEY: ${FERNET_KEY:?set FERNET_KEY in .env}
+      CORS_ORIGINS: ${PUBLIC_URL:-*}
+      SEED_ON_BOOT: ${SEED_ON_BOOT:-false}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+    # Production: run bootstrap (create_all + optional seed) then uvicorn WITHOUT --reload.
+    command: ["sh", "-c", "python -m app.bootstrap && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    # No host port and no source bind-mount — Caddy proxies to api:8000.
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${PUBLIC_URL:?set PUBLIC_URL in .env}
+    container_name: mneme-web
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2
+    container_name: mneme-caddy
+    restart: unless-stopped
+    depends_on:
+      - api
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  mneme_db:
+  mneme_ollama:
+  caddy_data:
+  caddy_config:
