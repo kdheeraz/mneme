@@ -133,4 +133,15 @@ export const api = {
   billingStatus: () => jreq<any>("/v1/billing/status"),
   subscribe: (plan: string) =>
     jreq<any>("/v1/billing/subscribe", { method: "POST", body: JSON.stringify({ plan }) }),
+
+  // public (no auth) — landing "Contact us"
+  contact: (body: { name: string; email: string; message: string }) =>
+    jreq<any>("/v1/contact", { method: "POST", body: JSON.stringify(body) }, false),
+  publicPlans: () => jreq<any[]>("/v1/billing/plans/public", {}, false),
+
+  // admin / operator (JWT, admin-email gated)
+  adminContact: () => jreq<any[]>("/v1/admin/contact"),
+  adminUsers: () => jreq<any[]>("/v1/admin/users"),
+  adminSetUser: (id: string, disabled: boolean) =>
+    jreq<any>(`/v1/admin/users/${id}`, { method: "POST", body: JSON.stringify({ disabled }) }),
 };

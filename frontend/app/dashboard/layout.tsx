@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { auth, api } from "@/lib/api";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -12,7 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const t = auth.token();
     if (!t) {
-      router.replace("/");
+      router.replace("/login");
       return;
     }
     (async () => {
@@ -37,7 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const logout = () => {
     auth.clear();
-    router.push("/");
+    router.push("/login");
   };
 
   return (
@@ -48,6 +49,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="text-[11px] uppercase tracking-widest opacity-70">{tenant?.name}</span>
         </div>
         <div className="flex items-center gap-4 text-xs">
+          {user?.is_admin && (
+            <Link href="/admin" className="opacity-80 hover:opacity-100 underline-offset-2 hover:underline">Admin</Link>
+          )}
           <span className="opacity-80">{user?.email}</span>
           <button onClick={logout} className="opacity-80 hover:opacity-100">Sign out</button>
         </div>
