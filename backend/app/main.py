@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from slugify import slugify
 
 from .db import get_db, Base, engine
-from .models import User, Tenant, Agent, ApiKey, Memory, Trace, GraphEntity, GraphRelation
+from .models import User, Tenant, Agent, ApiKey, Memory, Trace, GraphEntity, GraphRelation, ContactMessage
 from .schemas import (
     SignupIn, LoginIn, TokenOut, UserOut,
     TenantIn, TenantOut,
@@ -25,6 +25,7 @@ from .schemas import (
     ConsolidateIn, ConsolidateOut, ConsolidatePair,
     GraphOut, GraphEntityOut, GraphRelationOut,
     PlanOut, SubscribeIn, SubscribeOut, BillingStatusOut,
+    ContactIn, ContactOut, AdminUserRow, AdminUserUpdate,
 )
 from .auth import new_api_key, require_key, resolve_agent_for_write, KeyContext, tenant_from_any_auth
 from .auth_user import (
@@ -55,9 +56,87 @@ app.add_middleware(
 )
 
 
+# ---- admin (operator) helpers ----
+
+def _is_admin(user) -> bool:
+    admins = {e.strip().lower() for e in (settings.admin_emails or "").split(",") if e.strip()}
+    return bool(user) and user.email.lower() in admins
+
+
+def _user_out(user) -> UserOut:
+    out = UserOut.model_validate(user)
+    out.is_admin = _is_admin(user)
+    return out
+
+
+def require_admin(ctx: Tuple[User, Tenant] = Depends(current_user)) -> Tuple[User, Tenant]:
+    """current_user + operator-email gate. 403 for non-admins."""
+    if not _is_admin(ctx[0]):
+        raise HTTPException(403, "admin only")
+    return ctx
+
+
 @app.get("/health")
 def health():
     return {"ok": True, "version": "0.2.0"}
+
+
+@app.post("/v1/contact")
+def contact(body: ContactIn, db: Session = Depends(get_db)):
+    """Public 'Contact us' submission from the landing page (no auth)."""
+    db.add(ContactMessage(name=body.name.strip(), email=str(body.email), message=body.message.strip()))
+    db.commit()
+    return {"ok": True}
+
+
+@app.get("/v1/admin/contact", response_model=List[ContactOut])
+def list_contact(ctx: Tuple[User, Tenant] = Depends(require_admin), db: Session = Depends(get_db)):
+    """List landing-page contact submissions (most recent first). Operator-only."""
+    return db.query(ContactMessage).order_by(desc(ContactMessage.created_at)).limit(500).all()
+
+
+@app.get("/v1/admin/users", response_model=List[AdminUserRow])
+def admin_list_users(ctx: Tuple[User, Tenant] = Depends(require_admin), db: Session = Depends(get_db)):
+    """All users with their workspace, plan, subscription status, and account state."""
+    users = db.query(User).order_by(desc(User.created_at)).limit(1000).all()
+    tenants = {t.owner_user_id: t for t in db.query(Tenant).all()}
+    rows: List[AdminUserRow] = []
+    for u in users:
+        t = tenants.get(u.id)
+        agent_count = mem_count = 0
+        if t:
+            agent_count = db.query(func.count(Agent.id)).filter(Agent.tenant_id == t.id).scalar() or 0
+            mem_count = db.query(func.count(Memory.id)).filter(Memory.tenant_id == t.id).scalar() or 0
+        rows.append(AdminUserRow(
+            id=u.id, email=u.email, name=u.name, disabled=bool(u.disabled),
+            is_admin=_is_admin(u), created_at=u.created_at,
+            tenant_id=t.id if t else None, tenant_name=t.name if t else None,
+            plan=(t.plan if t else "free") or "free",
+            subscription_status=(t.subscription_status if t else None),
+            agent_count=int(agent_count), memory_count=int(mem_count),
+        ))
+    return rows
+
+
+@app.post("/v1/admin/users/{user_id}", response_model=AdminUserRow)
+def admin_set_user(user_id: UUID, body: AdminUserUpdate,
+                   ctx: Tuple[User, Tenant] = Depends(require_admin), db: Session = Depends(get_db)):
+    """Enable/disable an account. Disabling blocks login and invalidates active tokens."""
+    u = db.query(User).filter(User.id == user_id).first()
+    if not u:
+        raise HTTPException(404, "user not found")
+    if body.disabled and _is_admin(u):
+        raise HTTPException(400, "cannot disable an admin account")
+    u.disabled = body.disabled
+    db.commit()
+    db.refresh(u)
+    t = db.query(Tenant).filter(Tenant.owner_user_id == u.id).first()
+    return AdminUserRow(
+        id=u.id, email=u.email, name=u.name, disabled=bool(u.disabled), is_admin=_is_admin(u),
+        created_at=u.created_at, tenant_id=t.id if t else None, tenant_name=t.name if t else None,
+        plan=(t.plan if t else "free") or "free",
+        subscription_status=(t.subscription_status if t else None),
+    )
 
 
 # ==========================================================================
@@ -87,7 +166,7 @@ def signup(body: SignupIn, db: Session = Depends(get_db)):
     token = issue_jwt(user.id, tenant.id)
     return TokenOut(
         access_token=token,
-        user=UserOut.model_validate(user),
+        user=_user_out(user),
         tenant=TenantOut.model_validate(tenant),
     )
 
@@ -97,6 +176,8 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == body.email.lower()).first()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(401, "invalid credentials")
+    if user.disabled:
+        raise HTTPException(403, "account disabled — contact the operator")
     tenant = db.query(Tenant).filter(Tenant.owner_user_id == user.id).first()
     if not tenant:
         # bare user without tenant (shouldn't happen after signup); create on demand
@@ -107,7 +188,7 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
     token = issue_jwt(user.id, tenant.id)
     return TokenOut(
         access_token=token,
-        user=UserOut.model_validate(user),
+        user=_user_out(user),
         tenant=TenantOut.model_validate(tenant),
     )
 
@@ -119,7 +200,7 @@ def me(ctx: Tuple[User, Tenant] = Depends(current_user)):
     token = issue_jwt(user.id, tenant.id)
     return TokenOut(
         access_token=token,
-        user=UserOut.model_validate(user),
+        user=_user_out(user),
         tenant=TenantOut.model_validate(tenant),
     )
 
@@ -1057,6 +1138,15 @@ def stats(tenant: Tenant = Depends(tenant_from_any_auth), db: Session = Depends(
 # ==========================================================================
 # Billing (Razorpay)
 # ==========================================================================
+
+@app.get("/v1/billing/plans/public", response_model=List[PlanOut])
+def billing_plans_public():
+    """Public pricing for the landing page (no auth, no per-tenant 'current' flag)."""
+    return [
+        PlanOut(key=k, name=s["name"], amount=s["amount"], limits=s["limits"], current=False)
+        for k, s in billing.PLAN_DEFS.items()
+    ]
+
 
 @app.get("/v1/billing/plans", response_model=List[PlanOut])
 def billing_plans(ctx: Tuple[User, Tenant] = Depends(current_user)):

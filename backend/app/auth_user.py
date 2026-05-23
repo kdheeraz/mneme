@@ -78,6 +78,8 @@ def current_user(
     user = db.query(User).filter(User.id == payload["sub"]).first()
     if not user:
         raise HTTPException(401, "user not found")
+    if getattr(user, "disabled", False):
+        raise HTTPException(403, "account disabled")
     tenant = db.query(Tenant).filter(Tenant.id == payload["tenant"]).first()
     if not tenant:
         raise HTTPException(401, "tenant not found")

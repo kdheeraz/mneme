@@ -21,6 +21,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     name = Column(String(120))
+    disabled = Column(Boolean, default=False, nullable=False)  # operator can disable an account
     created_at = Column(DateTime, server_default=func.now())
 
 
@@ -186,4 +187,14 @@ class Trace(Base):
     query = Column(Text)
     results = Column(JSON)
     latency_ms = Column(Integer)
+    created_at = Column(DateTime, server_default=func.now(), index=True)
+
+
+class ContactMessage(Base):
+    """Public 'Contact us' submissions from the landing page (unauthenticated)."""
+    __tablename__ = "contact_messages"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    name = Column(String(120), nullable=False)
+    email = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now(), index=True)

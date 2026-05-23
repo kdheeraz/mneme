@@ -15,7 +15,7 @@ from .models import RazorpayPlan, Tenant
 
 # Amounts in paise (₹1 = 100 paise). Free has no Razorpay plan.
 PLAN_DEFS: Dict[str, dict] = {
-    "free": {"name": "Free",  "amount": 0,      "limits": {"agents": 2,   "memories": 1_000}},
+    "free": {"name": "Free",  "amount": 0,      "limits": {"agents": 1,   "memories": 100}},
     "pro":  {"name": "Pro",   "amount": 99_900, "limits": {"agents": 10,  "memories": 100_000}},
     "team": {"name": "Team",  "amount": 499_900,"limits": {"agents": 100, "memories": 2_000_000}},
 }

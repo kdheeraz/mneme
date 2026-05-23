@@ -30,6 +30,7 @@ class UserOut(BaseModel):
     email: str
     name: Optional[str]
     created_at: datetime
+    is_admin: bool = False
 
     class Config:
         from_attributes = True
@@ -363,6 +364,44 @@ class BillingStatusOut(BaseModel):
     configured: bool
     usage: dict = {}    # current per-resource counts, e.g. {"agents": 4, "memories": 23}
     limits: dict = {}   # plan caps for those resources
+
+
+class ContactIn(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    email: EmailStr
+    message: str = Field(min_length=1, max_length=4000)
+
+
+class ContactOut(BaseModel):
+    id: UUID
+    name: str
+    email: str
+    message: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# -------- Admin (operator-only) --------
+
+class AdminUserRow(BaseModel):
+    id: UUID
+    email: str
+    name: Optional[str] = None
+    disabled: bool = False
+    is_admin: bool = False
+    created_at: datetime
+    tenant_id: Optional[UUID] = None
+    tenant_name: Optional[str] = None
+    plan: str = "free"
+    subscription_status: Optional[str] = None
+    agent_count: int = 0
+    memory_count: int = 0
+
+
+class AdminUserUpdate(BaseModel):
+    disabled: bool
 
 
 class ConsolidateIn(BaseModel):

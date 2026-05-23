@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # In production set this to your dashboard origin, e.g. "https://mneme.example.com".
     cors_origins: str = "*"
 
+    # Comma-separated operator/admin emails. These accounts can access /admin
+    # (see all users, subscriptions, enable/disable accounts).
+    admin_emails: str = "demo@mneme.dev"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
