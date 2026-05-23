@@ -523,6 +523,9 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
   });
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [saveErr, setSaveErr] = useState<string | null>(null);
 
   const onLlmProvider = (v: string) => {
     const base = v === "ollama" && !edit.llm_base_url ? "http://host.docker.internal:11434" : edit.llm_base_url;
@@ -539,14 +542,24 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
   };
 
   const save = async () => {
+    setSaving(true);
+    setSaveMsg(null);
+    setSaveErr(null);
     const patch: any = { ...edit };
     if (!patch.llm_api_key) delete patch.llm_api_key;
     if (!patch.aws_access_key) delete patch.aws_access_key;
     if (!patch.aws_secret_key) delete patch.aws_secret_key;
     if (!patch.embedding_api_key) delete patch.embedding_api_key;
     if (!patch.rerank_api_key) delete patch.rerank_api_key;
-    await api.updateAgent(agent.slug, patch);
-    onChanged();
+    try {
+      await api.updateAgent(agent.slug, patch);
+      setSaveMsg("Saved ✓");
+      onChanged();
+    } catch (e: any) {
+      setSaveErr(e.message || "save failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const onRerank = (v: string) => {
@@ -723,9 +736,11 @@ function AgentDetail({ agent, onChanged }: { agent: any; onChanged: () => void }
         </div>
 
         <div className="flex gap-2 mt-3 items-center">
-          <button onClick={save} className="bg-ink text-white px-3 py-1.5 rounded text-xs font-semibold">
-            Save changes
+          <button onClick={save} disabled={saving} className="bg-ink text-white px-3 py-1.5 rounded text-xs font-semibold disabled:opacity-50">
+            {saving ? "Saving…" : "Save changes"}
           </button>
+          {saveMsg && <span className="text-green-700 text-xs">{saveMsg}</span>}
+          {saveErr && <span className="text-red-600 text-xs">{saveErr}</span>}
           <button
             onClick={runTest}
             disabled={testing}
