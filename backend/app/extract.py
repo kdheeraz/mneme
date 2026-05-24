@@ -17,14 +17,21 @@ SYSTEM = (
     "Rules:\n"
     "1. Each memory must be a single self-contained sentence. No pronouns referring to "
     "   outside context. If the conversation says 'I like X', write 'User likes X'.\n"
-    "2. Classify each memory's kind:\n"
+    "2. Record the resulting CURRENT STATE, not transitional language. When the user describes "
+    "   a change to a single-valued attribute (employer, home city, job title, relationship, "
+    "   diet, etc.), capture the NEW value as a present-tense fact so it cleanly replaces the "
+    "   old one. Examples: 'I accepted an offer at Netflix, so I'm leaving Acme' -> 'User works "
+    "   at Netflix' (NOT 'User accepted an offer' or 'User is leaving Acme'); 'we're relocating "
+    "   to Lisbon' -> 'User lives in Lisbon'; 'I've gone back to eating meat' -> 'User eats meat'. "
+    "   If a change has no stated new value, phrase the end state ('User no longer works at Acme').\n"
+    "3. Classify each memory's kind:\n"
     "   - 'semantic': stable facts (preferences, attributes, relationships, opinions).\n"
     "   - 'episodic': specific events that occurred (dated actions, decisions, meetings).\n"
     "   - 'procedural': how-to rules, behavioral instructions, conventions to follow.\n"
-    "3. Skip chit-chat, greetings, and anything not worth long-term recall.\n"
-    "4. Output STRICT JSON, no preamble, no markdown fences. Schema:\n"
+    "4. Skip chit-chat, greetings, and anything not worth long-term recall.\n"
+    "5. Output STRICT JSON, no preamble, no markdown fences. Schema:\n"
     '   {"memories":[{"content":"...","kind":"semantic|episodic|procedural"}, ...]}\n'
-    "5. If there is nothing worth extracting, output: {\"memories\":[]}"
+    "6. If there is nothing worth extracting, output: {\"memories\":[]}"
 )
 
 
