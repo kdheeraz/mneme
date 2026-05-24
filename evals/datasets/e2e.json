@@ -1,0 +1,23 @@
+{
+  "description": "End-to-end, LLM-judged. A multi-session conversation is ingested into Mneme; questions probe each capability. Categories: single_hop, multi_hop, temporal, update, abstention.",
+  "cases": [
+    {
+      "name": "dheeraj",
+      "sessions": [
+        "Hi, I'm Dheeraj. I live in Bangalore and I work as a software engineer at JPMC.",
+        "I'm vegetarian and I really enjoy hiking on weekends.",
+        "Quick update: I just accepted an offer at Microsoft, so I'm leaving JPMC next month.",
+        "We adopted a dog last weekend — her name is Pixel.",
+        "I had a dentist appointment on March 3rd, and my team offsite is on March 20th."
+      ],
+      "questions": [
+        { "q": "What is the user's name?", "answer": "Dheeraj", "category": "single_hop" },
+        { "q": "What is the user's dog's name?", "answer": "Pixel", "category": "single_hop" },
+        { "q": "Where does the user currently work?", "answer": "Microsoft", "category": "update" },
+        { "q": "Is the user vegetarian, and do they have any pets?", "answer": "Yes — vegetarian, and has a dog named Pixel", "category": "multi_hop" },
+        { "q": "Did the dentist appointment happen before or after the team offsite?", "answer": "Before — dentist was March 3, offsite is March 20", "category": "temporal" },
+        { "q": "What is the user's blood type?", "answer": "Not stated in the conversation", "category": "abstention" }
+      ]
+    }
+  ]
+}

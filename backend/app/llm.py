@@ -103,7 +103,7 @@ def _anthropic_client(agent: Agent, provider: str):
 
 
 def _anthropic_chat(client, model: str, messages: List[Dict[str, str]],
-                    max_tokens: int, json_mode: bool) -> str:
+                    max_tokens: int, json_mode: bool, temperature: float = 0.0) -> str:
     """Shared Messages API call for direct Anthropic + Bedrock.
 
     - json_mode: this SDK (0.40) predates structured outputs, so we enforce JSON with a
@@ -124,7 +124,7 @@ def _anthropic_chat(client, model: str, messages: List[Dict[str, str]],
     if json_mode:
         system_text += JSON_ONLY_DIRECTIVE
 
-    kwargs: Dict = {"model": model, "messages": turns, "max_tokens": max_tokens}
+    kwargs: Dict = {"model": model, "messages": turns, "max_tokens": max_tokens, "temperature": temperature}
     if system_text.strip():
         kwargs["system"] = [{
             "type": "text",
@@ -135,11 +135,14 @@ def _anthropic_chat(client, model: str, messages: List[Dict[str, str]],
     return "".join(b.text for b in resp.content if hasattr(b, "text"))
 
 
-def chat(agent: Agent, messages: List[Dict[str, str]], max_tokens: int = 256, json_mode: bool = False) -> str:
+def chat(agent: Agent, messages: List[Dict[str, str]], max_tokens: int = 256,
+         json_mode: bool = False, temperature: float = 0.0) -> str:
     """Synchronous text completion. Returns the assistant's text.
     json_mode=True coaxes the model to emit valid JSON (grammar-constrained on Ollama,
     response_format on OpenAI, JSON-only system directive on Anthropic/Bedrock). Use for
-    extraction; leave off for free text."""
+    extraction; leave off for free text.
+    temperature defaults to 0 (greedy) — these are structured/factual tasks (extraction,
+    reconciliation, merge), so deterministic decoding makes them robust + repeatable."""
     provider = agent.llm_provider or "none"
     model = agent.llm_model or _default_model(provider)
     api_key = decrypt_secret(agent.llm_api_key_enc)
@@ -158,13 +161,13 @@ def chat(agent: Agent, messages: List[Dict[str, str]], max_tokens: int = 256, js
         client = OpenAI(**kw)
         extra = {"response_format": {"type": "json_object"}} if json_mode else {}
         resp = client.chat.completions.create(
-            model=model, messages=messages, max_tokens=max_tokens, **extra
+            model=model, messages=messages, max_tokens=max_tokens, temperature=temperature, **extra
         )
         return resp.choices[0].message.content or ""
 
     if provider in ("anthropic", "bedrock"):
         client = _anthropic_client(agent, provider)
-        return _anthropic_chat(client, model, messages, max_tokens, json_mode)
+        return _anthropic_chat(client, model, messages, max_tokens, json_mode, temperature)
 
     if provider == "ollama":
         url = (base_url or DEFAULT_OLLAMA_URL).rstrip("/") + "/api/chat"
@@ -177,7 +180,7 @@ def chat(agent: Agent, messages: List[Dict[str, str]], max_tokens: int = 256, js
             "messages": messages,
             "stream": False,
             "think": False,
-            "options": {"num_predict": max_tokens},
+            "options": {"num_predict": max_tokens, "temperature": temperature},
         }
         if json_mode:
             payload["format"] = "json"

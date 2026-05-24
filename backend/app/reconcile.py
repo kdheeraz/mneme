@@ -24,12 +24,19 @@ from .jsonutil import parse_json_lenient
 
 
 DECISION_SYSTEM = (
-    "You manage an AI agent's long-term memory. Given a NEW fact and the most similar "
-    "EXISTING memories, choose exactly ONE operation:\n"
-    "- ADD: the new fact is genuinely new information.\n"
+    "You manage an AI agent's long-term memory. The EXISTING memories represent the user's "
+    "CURRENT state. Given a NEW fact and the most similar EXISTING memories, choose exactly "
+    "ONE operation:\n"
+    "- ADD: the new fact is genuinely new information that does not conflict with any existing memory.\n"
     "- NOOP: the new fact is already fully captured by an existing memory.\n"
     "- UPDATE: the new fact refines or extends ONE existing memory (merge them).\n"
-    "- DELETE: the new fact contradicts or obsoletes ONE existing memory (replace it).\n"
+    "- DELETE: the new fact changes or obsoletes ONE existing memory — pick the stale memory "
+    "as target_id so it is replaced.\n"
+    "Single-valued attributes (employer, home city, job title, marital status, current diet, "
+    "etc.) have only ONE current value: if the new fact gives a different value for such an "
+    "attribute, you MUST DELETE the existing memory that asserts the old value — never keep both. "
+    "Change signals like 'left', 'moved', 'no longer', 'now', 'switched', 'previously', 'used to' "
+    "mean the prior state is stale.\n"
     'Return JSON only: {"operation":"ADD|NOOP|UPDATE|DELETE",'
     '"target_id":"<id of the existing memory for UPDATE/DELETE, else null>",'
     '"content":"<final memory text to store for ADD/UPDATE/DELETE, else null>",'
@@ -39,7 +46,7 @@ DECISION_SYSTEM = (
 
 def _find_candidates(
     db: Session, tenant: Tenant, agent_slug: Optional[str], user_id: Optional[str],
-    qvec, threshold: float, k: int = 5,
+    qvec, threshold: float, k: int = 8,
 ) -> List[Tuple[Memory, float]]:
     stmt = select(
         Memory, (1 - Memory.embedding.cosine_distance(qvec)).label("sim")
@@ -83,7 +90,11 @@ def reconcile_write(
     content: str, kind: str, scope: str,
     user_id: Optional[str], session_id: Optional[str],
     importance: float, meta: Optional[dict],
-    sim_threshold: float = 0.80,
+    # Candidate floor for what the LLM gets to reconcile against. Kept moderate (not 0.80):
+    # genuinely-contradictory facts can be only ~0.77 similar when phrased differently
+    # (e.g. "moved to Berlin" vs "lives in Bangalore"), and the LLM is the real gate —
+    # it returns ADD/NOOP for anything that isn't actually a match.
+    sim_threshold: float = 0.60,
 ) -> Tuple[Optional[Memory], str]:
     """Returns (resulting_memory, operation). For NOOP, resulting_memory is the matched
     existing memory (so callers always get something back)."""

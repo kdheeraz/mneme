@@ -1,0 +1,38 @@
+{
+  "description": "Retrieval quality. Seed memories, query, check the right ones rank in the top-k. `relevant` indexes into `memories`.",
+  "modes": ["vector", "hybrid"],
+  "cases": [
+    {
+      "name": "preferences",
+      "memories": [
+        "User is vegetarian",
+        "User lives in Bangalore",
+        "User prefers morning meetings",
+        "User works on AI agents",
+        "User's favorite programming language is Rust",
+        "User has a dog named Pixel"
+      ],
+      "queries": [
+        { "query": "what does the user eat?", "relevant": [0], "k": 3 },
+        { "query": "which city is the user based in?", "relevant": [1], "k": 3 },
+        { "query": "what time of day does the user like to meet?", "relevant": [2], "k": 3 },
+        { "query": "what programming language does the user prefer?", "relevant": [4], "k": 3 },
+        { "query": "does the user have any pets?", "relevant": [5], "k": 3 }
+      ]
+    },
+    {
+      "name": "support_context",
+      "memories": [
+        "Customer is on the Enterprise plan, renewal date Oct 12",
+        "Customer reported an SSO issue resolved by re-provisioning the SAML cert",
+        "Customer prefers responses under 3 sentences",
+        "Customer's primary contact is the VP of Engineering"
+      ],
+      "queries": [
+        { "query": "what plan is the customer on?", "relevant": [0], "k": 3 },
+        { "query": "what past technical issue did the customer have?", "relevant": [1], "k": 3 },
+        { "query": "how does the customer like replies formatted?", "relevant": [2], "k": 3 }
+      ]
+    }
+  ]
+}

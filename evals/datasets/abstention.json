@@ -1,0 +1,17 @@
+{
+  "description": "Abstention. For a query unrelated to anything stored, the top vector hit should NOT be spuriously confident (similarity below max_similarity) — so the agent has nothing to wrongly answer from.",
+  "cases": [
+    {
+      "name": "unrelated_finance",
+      "memories": ["User is vegetarian", "User lives in Bangalore", "User prefers morning meetings"],
+      "query": "what is the user's bank account number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "unrelated_health",
+      "memories": ["User works on AI agents", "User's favorite language is Rust"],
+      "query": "what allergies does the user have?",
+      "max_similarity": 0.55
+    }
+  ]
+}

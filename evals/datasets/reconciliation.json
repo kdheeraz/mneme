@@ -1,0 +1,26 @@
+{
+  "description": "Contradiction handling. Ingest statements in order with write-time reconcile on; a newer fact should supersede the older contradicting one. NOTE: should_not_contain targets the OLD PRESENT-TENSE assertion ('works at JPMC') — NOT the bare entity — so a correct history note ('previously worked at JPMC') doesn't trip a false failure.",
+  "cases": [
+    {
+      "name": "employer_change",
+      "ingest": ["I work at JPMC.", "Update: I left JPMC, I now work at Microsoft."],
+      "query": "where does the user work?",
+      "should_contain": ["Microsoft"],
+      "should_not_contain": ["works at JPMC"]
+    },
+    {
+      "name": "diet_change",
+      "ingest": ["I am vegetarian.", "I'm not vegetarian anymore, I eat meat now."],
+      "query": "what is the user's diet?",
+      "should_contain": [],
+      "should_not_contain": ["is vegetarian"]
+    },
+    {
+      "name": "city_move",
+      "ingest": ["I live in Bangalore.", "I moved to Berlin last month."],
+      "query": "where does the user live?",
+      "should_contain": ["Berlin"],
+      "should_not_contain": ["lives in Bangalore"]
+    }
+  ]
+}

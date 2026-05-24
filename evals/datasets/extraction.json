@@ -1,0 +1,27 @@
+{
+  "description": "Extraction. /ingest (dry-run) should distill durable facts and skip greetings/questions. expect_any = at least one substring must appear in an extracted fact.",
+  "cases": [
+    {
+      "name": "multi_fact",
+      "input": "Hey! I'm Dheeraj, I live in Bangalore and I'm vegetarian.",
+      "expect_any": ["Dheeraj", "Bangalore", "vegetarian"],
+      "min_facts": 2
+    },
+    {
+      "name": "single_fact",
+      "input": "By the way, I work on AI agents at a startup.",
+      "expect_any": ["AI agents", "startup"],
+      "min_facts": 1
+    },
+    {
+      "name": "greeting",
+      "input": "hey how's it going",
+      "max_facts": 0
+    },
+    {
+      "name": "question",
+      "input": "what do you know about me?",
+      "max_facts": 0
+    }
+  ]
+}
