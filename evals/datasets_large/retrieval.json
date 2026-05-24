@@ -1,0 +1,988 @@
+{
+  "description": "generated retrieval set",
+  "modes": [
+    "hybrid"
+  ],
+  "cases": [
+    {
+      "name": "p0",
+      "memories": [
+        "User's name is Noah",
+        "User lives in Lisbon",
+        "User works as a machine learning researcher at Datadog",
+        "User is vegetarian",
+        "User's favorite programming language is Rust",
+        "User has a parrot named Kiwi",
+        "User enjoys hiking"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p1",
+      "memories": [
+        "User's name is Ava",
+        "User lives in Singapore",
+        "User works as a site reliability engineer at JPMC",
+        "User is vegetarian",
+        "User's favorite programming language is Rust",
+        "User has a dog named Pixel",
+        "User enjoys cycling"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p2",
+      "memories": [
+        "User's name is Zara",
+        "User lives in Berlin",
+        "User works as a software engineer at Stripe",
+        "User is pescatarian",
+        "User's favorite programming language is TypeScript",
+        "User has a dog named Pixel",
+        "User enjoys chess"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p3",
+      "memories": [
+        "User's name is Lena",
+        "User lives in Tokyo",
+        "User works as a software engineer at Adobe",
+        "User is pescatarian",
+        "User's favorite programming language is Kotlin",
+        "User has a cat named Luna",
+        "User enjoys hiking"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p4",
+      "memories": [
+        "User's name is Sara",
+        "User lives in Bangalore",
+        "User works as a data scientist at Netflix",
+        "User is vegan",
+        "User's favorite programming language is TypeScript",
+        "User has a cat named Mango",
+        "User enjoys chess"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p5",
+      "memories": [
+        "User's name is Lena",
+        "User lives in Singapore",
+        "User works as a site reliability engineer at Google",
+        "User is pescatarian",
+        "User's favorite programming language is Python",
+        "User has a dog named Pixel",
+        "User enjoys chess"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p6",
+      "memories": [
+        "User's name is Diego",
+        "User lives in Pune",
+        "User works as a product manager at Stripe",
+        "User is vegetarian",
+        "User's favorite programming language is Kotlin",
+        "User has a dog named Pixel",
+        "User enjoys chess"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p7",
+      "memories": [
+        "User's name is Aisha",
+        "User lives in Singapore",
+        "User works as a designer at Stripe",
+        "User is pescatarian",
+        "User's favorite programming language is Kotlin",
+        "User has a cat named Luna",
+        "User enjoys painting"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p8",
+      "memories": [
+        "User's name is Ivan",
+        "User lives in Singapore",
+        "User works as a product manager at Shopify",
+        "User is vegan",
+        "User's favorite programming language is Python",
+        "User has a cat named Mango",
+        "User enjoys photography"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p9",
+      "memories": [
+        "User's name is Ana",
+        "User lives in Tokyo",
+        "User works as a site reliability engineer at Microsoft",
+        "User is vegan",
+        "User's favorite programming language is Kotlin",
+        "User has a cat named Luna",
+        "User enjoys painting"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p10",
+      "memories": [
+        "User's name is Ravi",
+        "User lives in Dublin",
+        "User works as a site reliability engineer at Google",
+        "User is vegetarian",
+        "User's favorite programming language is Rust",
+        "User has a parrot named Kiwi",
+        "User enjoys cycling"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p11",
+      "memories": [
+        "User's name is Priya",
+        "User lives in Toronto",
+        "User works as a designer at Acme",
+        "User is vegan",
+        "User's favorite programming language is Rust",
+        "User has a dog named Pixel",
+        "User enjoys chess"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p12",
+      "memories": [
+        "User's name is Diego",
+        "User lives in Toronto",
+        "User works as a machine learning researcher at Infosys",
+        "User is vegan",
+        "User's favorite programming language is Kotlin",
+        "User has a cat named Luna",
+        "User enjoys chess"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p13",
+      "memories": [
+        "User's name is Leo",
+        "User lives in Dublin",
+        "User works as a software engineer at Microsoft",
+        "User is vegan",
+        "User's favorite programming language is TypeScript",
+        "User has a dog named Pixel",
+        "User enjoys hiking"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p14",
+      "memories": [
+        "User's name is Ravi",
+        "User lives in Amsterdam",
+        "User works as a machine learning researcher at Google",
+        "User is pescatarian",
+        "User's favorite programming language is Elixir",
+        "User has a cat named Luna",
+        "User enjoys painting"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p15",
+      "memories": [
+        "User's name is Sam",
+        "User lives in Nairobi",
+        "User works as a software engineer at Infosys",
+        "User is vegan",
+        "User's favorite programming language is Go",
+        "User has a cat named Mango",
+        "User enjoys chess"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p16",
+      "memories": [
+        "User's name is Lena",
+        "User lives in Dublin",
+        "User works as a data scientist at JPMC",
+        "User is vegan",
+        "User's favorite programming language is Python",
+        "User has a cat named Mango",
+        "User enjoys cycling"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p17",
+      "memories": [
+        "User's name is Liam",
+        "User lives in Dublin",
+        "User works as a data scientist at Microsoft",
+        "User is vegan",
+        "User's favorite programming language is TypeScript",
+        "User has a parrot named Kiwi",
+        "User enjoys painting"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p18",
+      "memories": [
+        "User's name is Nina",
+        "User lives in Lisbon",
+        "User works as a site reliability engineer at Datadog",
+        "User is vegan",
+        "User's favorite programming language is Elixir",
+        "User has a cat named Luna",
+        "User enjoys painting"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    },
+    {
+      "name": "p19",
+      "memories": [
+        "User's name is Elena",
+        "User lives in Nairobi",
+        "User works as a data scientist at Stripe",
+        "User is vegetarian",
+        "User's favorite programming language is Python",
+        "User has a cat named Mango",
+        "User enjoys rock climbing"
+      ],
+      "queries": [
+        {
+          "query": "what is the user's name?",
+          "relevant": [
+            0
+          ],
+          "k": 3
+        },
+        {
+          "query": "which city does the user live in?",
+          "relevant": [
+            1
+          ],
+          "k": 3
+        },
+        {
+          "query": "where does the user work?",
+          "relevant": [
+            2
+          ],
+          "k": 3
+        },
+        {
+          "query": "what is the user's diet?",
+          "relevant": [
+            3
+          ],
+          "k": 3
+        },
+        {
+          "query": "what programming language does the user prefer?",
+          "relevant": [
+            4
+          ],
+          "k": 3
+        }
+      ]
+    }
+  ]
+}

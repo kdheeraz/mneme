@@ -1,0 +1,725 @@
+{
+  "description": "generated e2e set",
+  "cases": [
+    {
+      "name": "e0",
+      "sessions": [
+        "Hi, I'm Yuki. I live in Madrid and I work as a machine learning researcher at Stripe.",
+        "I'm vegan and I really enjoy chess.",
+        "Update: I accepted an offer at Netflix, so I'm leaving Stripe.",
+        "We got a parrot \u2014 her name is Kiwi."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Yuki",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Kiwi",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Netflix",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegan and do they have a pet?",
+          "answer": "Yes \u2014 vegan with a parrot named Kiwi",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e1",
+      "sessions": [
+        "Hi, I'm Hugo. I live in Tokyo and I work as a product manager at Netflix.",
+        "I'm pescatarian and I really enjoy rock climbing.",
+        "Update: I accepted an offer at Datadog, so I'm leaving Netflix.",
+        "We got a cat \u2014 her name is Luna."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Hugo",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Luna",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Datadog",
+          "category": "update"
+        },
+        {
+          "q": "Is the user pescatarian and do they have a pet?",
+          "answer": "Yes \u2014 pescatarian with a cat named Luna",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e2",
+      "sessions": [
+        "Hi, I'm Lena. I live in Nairobi and I work as a product manager at Shopify.",
+        "I'm vegetarian and I really enjoy cycling.",
+        "Update: I accepted an offer at Microsoft, so I'm leaving Shopify.",
+        "We got a cat \u2014 her name is Mango."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Lena",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Mango",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Microsoft",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a cat named Mango",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e3",
+      "sessions": [
+        "Hi, I'm Tomas. I live in Pune and I work as a software engineer at Google.",
+        "I'm vegetarian and I really enjoy rock climbing.",
+        "Update: I accepted an offer at Infosys, so I'm leaving Google.",
+        "We got a dog \u2014 her name is Bo."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Tomas",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Bo",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Infosys",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a dog named Bo",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e4",
+      "sessions": [
+        "Hi, I'm Nina. I live in Lisbon and I work as a data scientist at Shopify.",
+        "I'm pescatarian and I really enjoy cycling.",
+        "Update: I accepted an offer at Acme, so I'm leaving Shopify.",
+        "We got a cat \u2014 her name is Luna."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Nina",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Luna",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Acme",
+          "category": "update"
+        },
+        {
+          "q": "Is the user pescatarian and do they have a pet?",
+          "answer": "Yes \u2014 pescatarian with a cat named Luna",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e5",
+      "sessions": [
+        "Hi, I'm Elena. I live in Tokyo and I work as a machine learning researcher at Acme.",
+        "I'm vegan and I really enjoy painting.",
+        "Update: I accepted an offer at Shopify, so I'm leaving Acme.",
+        "We got a cat \u2014 her name is Luna."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Elena",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Luna",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Shopify",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegan and do they have a pet?",
+          "answer": "Yes \u2014 vegan with a cat named Luna",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e6",
+      "sessions": [
+        "Hi, I'm Tomas. I live in Toronto and I work as a software engineer at Infosys.",
+        "I'm pescatarian and I really enjoy painting.",
+        "Update: I accepted an offer at Adobe, so I'm leaving Infosys.",
+        "We got a dog \u2014 her name is Pixel."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Tomas",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Pixel",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Adobe",
+          "category": "update"
+        },
+        {
+          "q": "Is the user pescatarian and do they have a pet?",
+          "answer": "Yes \u2014 pescatarian with a dog named Pixel",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e7",
+      "sessions": [
+        "Hi, I'm Ivan. I live in Dublin and I work as a designer at JPMC.",
+        "I'm vegan and I really enjoy painting.",
+        "Update: I accepted an offer at Adobe, so I'm leaving JPMC.",
+        "We got a parrot \u2014 her name is Kiwi."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Ivan",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Kiwi",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Adobe",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegan and do they have a pet?",
+          "answer": "Yes \u2014 vegan with a parrot named Kiwi",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e8",
+      "sessions": [
+        "Hi, I'm Marco. I live in Berlin and I work as a software engineer at Stripe.",
+        "I'm vegetarian and I really enjoy hiking.",
+        "Update: I accepted an offer at Acme, so I'm leaving Stripe.",
+        "We got a dog \u2014 her name is Bo."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Marco",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Bo",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Acme",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a dog named Bo",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e9",
+      "sessions": [
+        "Hi, I'm Omar. I live in Lisbon and I work as a machine learning researcher at Datadog.",
+        "I'm vegan and I really enjoy chess.",
+        "Update: I accepted an offer at Adobe, so I'm leaving Datadog.",
+        "We got a cat \u2014 her name is Mango."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Omar",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Mango",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Adobe",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegan and do they have a pet?",
+          "answer": "Yes \u2014 vegan with a cat named Mango",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e10",
+      "sessions": [
+        "Hi, I'm Diego. I live in Dublin and I work as a software engineer at Infosys.",
+        "I'm vegan and I really enjoy cycling.",
+        "Update: I accepted an offer at Microsoft, so I'm leaving Infosys.",
+        "We got a cat \u2014 her name is Mango."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Diego",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Mango",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Microsoft",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegan and do they have a pet?",
+          "answer": "Yes \u2014 vegan with a cat named Mango",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e11",
+      "sessions": [
+        "Hi, I'm Omar. I live in Bangalore and I work as a product manager at Microsoft.",
+        "I'm vegetarian and I really enjoy hiking.",
+        "Update: I accepted an offer at Infosys, so I'm leaving Microsoft.",
+        "We got a cat \u2014 her name is Mango."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Omar",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Mango",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Infosys",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a cat named Mango",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e12",
+      "sessions": [
+        "Hi, I'm Kai. I live in Berlin and I work as a software engineer at Shopify.",
+        "I'm vegan and I really enjoy painting.",
+        "Update: I accepted an offer at Acme, so I'm leaving Shopify.",
+        "We got a cat \u2014 her name is Luna."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Kai",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Luna",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Acme",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegan and do they have a pet?",
+          "answer": "Yes \u2014 vegan with a cat named Luna",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e13",
+      "sessions": [
+        "Hi, I'm Aisha. I live in Madrid and I work as a software engineer at Stripe.",
+        "I'm vegetarian and I really enjoy rock climbing.",
+        "Update: I accepted an offer at Google, so I'm leaving Stripe.",
+        "We got a dog \u2014 her name is Pixel."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Aisha",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Pixel",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Google",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a dog named Pixel",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e14",
+      "sessions": [
+        "Hi, I'm Theo. I live in Austin and I work as a site reliability engineer at Google.",
+        "I'm vegetarian and I really enjoy chess.",
+        "Update: I accepted an offer at Acme, so I'm leaving Google.",
+        "We got a cat \u2014 her name is Luna."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Theo",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Luna",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Acme",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a cat named Luna",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e15",
+      "sessions": [
+        "Hi, I'm Omar. I live in Toronto and I work as a product manager at JPMC.",
+        "I'm vegetarian and I really enjoy photography.",
+        "Update: I accepted an offer at Adobe, so I'm leaving JPMC.",
+        "We got a dog \u2014 her name is Pixel."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Omar",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Pixel",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Adobe",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a dog named Pixel",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e16",
+      "sessions": [
+        "Hi, I'm Fatima. I live in Tokyo and I work as a designer at Netflix.",
+        "I'm vegetarian and I really enjoy photography.",
+        "Update: I accepted an offer at Datadog, so I'm leaving Netflix.",
+        "We got a dog \u2014 her name is Pixel."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Fatima",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Pixel",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Datadog",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a dog named Pixel",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e17",
+      "sessions": [
+        "Hi, I'm Elena. I live in Dublin and I work as a designer at Netflix.",
+        "I'm pescatarian and I really enjoy rock climbing.",
+        "Update: I accepted an offer at Infosys, so I'm leaving Netflix.",
+        "We got a cat \u2014 her name is Mango."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Elena",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Mango",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Infosys",
+          "category": "update"
+        },
+        {
+          "q": "Is the user pescatarian and do they have a pet?",
+          "answer": "Yes \u2014 pescatarian with a cat named Mango",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e18",
+      "sessions": [
+        "Hi, I'm Tomas. I live in Amsterdam and I work as a designer at Acme.",
+        "I'm vegan and I really enjoy hiking.",
+        "Update: I accepted an offer at Microsoft, so I'm leaving Acme.",
+        "We got a cat \u2014 her name is Mango."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Tomas",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Mango",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Microsoft",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegan and do they have a pet?",
+          "answer": "Yes \u2014 vegan with a cat named Mango",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    },
+    {
+      "name": "e19",
+      "sessions": [
+        "Hi, I'm Raj. I live in Amsterdam and I work as a designer at Google.",
+        "I'm vegetarian and I really enjoy photography.",
+        "Update: I accepted an offer at Shopify, so I'm leaving Google.",
+        "We got a dog \u2014 her name is Pixel."
+      ],
+      "questions": [
+        {
+          "q": "What is the user's name?",
+          "answer": "Raj",
+          "category": "single_hop"
+        },
+        {
+          "q": "What is the user's pet's name?",
+          "answer": "Pixel",
+          "category": "single_hop"
+        },
+        {
+          "q": "Where does the user currently work?",
+          "answer": "Shopify",
+          "category": "update"
+        },
+        {
+          "q": "Is the user vegetarian and do they have a pet?",
+          "answer": "Yes \u2014 vegetarian with a dog named Pixel",
+          "category": "multi_hop"
+        },
+        {
+          "q": "What is the user's shoe size?",
+          "answer": "Not stated",
+          "category": "abstention"
+        }
+      ]
+    }
+  ]
+}

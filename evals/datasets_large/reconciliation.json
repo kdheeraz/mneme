@@ -1,0 +1,285 @@
+{
+  "description": "generated reconciliation set",
+  "cases": [
+    {
+      "name": "city0",
+      "ingest": [
+        "I live in Bangalore.",
+        "I moved to Dublin recently."
+      ],
+      "query": "where does the user live?",
+      "should_contain": [
+        "Dublin"
+      ],
+      "should_not_contain": [
+        "lives in Bangalore"
+      ]
+    },
+    {
+      "name": "city1",
+      "ingest": [
+        "I live in Austin.",
+        "I moved to Amsterdam recently."
+      ],
+      "query": "where does the user live?",
+      "should_contain": [
+        "Amsterdam"
+      ],
+      "should_not_contain": [
+        "lives in Austin"
+      ]
+    },
+    {
+      "name": "emp2",
+      "ingest": [
+        "I work at Acme.",
+        "Update: I left Acme, I now work at Datadog."
+      ],
+      "query": "where does the user work?",
+      "should_contain": [
+        "Datadog"
+      ],
+      "should_not_contain": [
+        "works at Acme"
+      ]
+    },
+    {
+      "name": "diet3",
+      "ingest": [
+        "I am pescatarian.",
+        "I'm not pescatarian anymore, I'm vegan now."
+      ],
+      "query": "what is the user's diet?",
+      "should_contain": [
+        "vegan"
+      ],
+      "should_not_contain": [
+        "is pescatarian"
+      ]
+    },
+    {
+      "name": "city4",
+      "ingest": [
+        "I live in Amsterdam.",
+        "I moved to Madrid recently."
+      ],
+      "query": "where does the user live?",
+      "should_contain": [
+        "Madrid"
+      ],
+      "should_not_contain": [
+        "lives in Amsterdam"
+      ]
+    },
+    {
+      "name": "emp5",
+      "ingest": [
+        "I work at Shopify.",
+        "Update: I left Shopify, I now work at Netflix."
+      ],
+      "query": "where does the user work?",
+      "should_contain": [
+        "Netflix"
+      ],
+      "should_not_contain": [
+        "works at Shopify"
+      ]
+    },
+    {
+      "name": "job6",
+      "ingest": [
+        "I'm a designer.",
+        "I switched roles \u2014 I'm a machine learning researcher now."
+      ],
+      "query": "what is the user's job?",
+      "should_contain": [
+        "machine learning researcher"
+      ],
+      "should_not_contain": [
+        "is a designer"
+      ]
+    },
+    {
+      "name": "job7",
+      "ingest": [
+        "I'm a software engineer.",
+        "I switched roles \u2014 I'm a designer now."
+      ],
+      "query": "what is the user's job?",
+      "should_contain": [
+        "designer"
+      ],
+      "should_not_contain": [
+        "is a software engineer"
+      ]
+    },
+    {
+      "name": "job8",
+      "ingest": [
+        "I'm a software engineer.",
+        "I switched roles \u2014 I'm a data scientist now."
+      ],
+      "query": "what is the user's job?",
+      "should_contain": [
+        "data scientist"
+      ],
+      "should_not_contain": [
+        "is a software engineer"
+      ]
+    },
+    {
+      "name": "emp9",
+      "ingest": [
+        "I work at Stripe.",
+        "Update: I left Stripe, I now work at Shopify."
+      ],
+      "query": "where does the user work?",
+      "should_contain": [
+        "Shopify"
+      ],
+      "should_not_contain": [
+        "works at Stripe"
+      ]
+    },
+    {
+      "name": "city10",
+      "ingest": [
+        "I live in Berlin.",
+        "I moved to Toronto recently."
+      ],
+      "query": "where does the user live?",
+      "should_contain": [
+        "Toronto"
+      ],
+      "should_not_contain": [
+        "lives in Berlin"
+      ]
+    },
+    {
+      "name": "emp11",
+      "ingest": [
+        "I work at Microsoft.",
+        "Update: I left Microsoft, I now work at JPMC."
+      ],
+      "query": "where does the user work?",
+      "should_contain": [
+        "JPMC"
+      ],
+      "should_not_contain": [
+        "works at Microsoft"
+      ]
+    },
+    {
+      "name": "city12",
+      "ingest": [
+        "I live in Madrid.",
+        "I moved to Berlin recently."
+      ],
+      "query": "where does the user live?",
+      "should_contain": [
+        "Berlin"
+      ],
+      "should_not_contain": [
+        "lives in Madrid"
+      ]
+    },
+    {
+      "name": "diet13",
+      "ingest": [
+        "I am pescatarian.",
+        "I'm not pescatarian anymore, I'm vegetarian now."
+      ],
+      "query": "what is the user's diet?",
+      "should_contain": [
+        "vegetarian"
+      ],
+      "should_not_contain": [
+        "is pescatarian"
+      ]
+    },
+    {
+      "name": "emp14",
+      "ingest": [
+        "I work at Stripe.",
+        "Update: I left Stripe, I now work at Datadog."
+      ],
+      "query": "where does the user work?",
+      "should_contain": [
+        "Datadog"
+      ],
+      "should_not_contain": [
+        "works at Stripe"
+      ]
+    },
+    {
+      "name": "city15",
+      "ingest": [
+        "I live in Pune.",
+        "I moved to Austin recently."
+      ],
+      "query": "where does the user live?",
+      "should_contain": [
+        "Austin"
+      ],
+      "should_not_contain": [
+        "lives in Pune"
+      ]
+    },
+    {
+      "name": "diet16",
+      "ingest": [
+        "I am pescatarian.",
+        "I'm not pescatarian anymore, I'm vegan now."
+      ],
+      "query": "what is the user's diet?",
+      "should_contain": [
+        "vegan"
+      ],
+      "should_not_contain": [
+        "is pescatarian"
+      ]
+    },
+    {
+      "name": "job17",
+      "ingest": [
+        "I'm a software engineer.",
+        "I switched roles \u2014 I'm a machine learning researcher now."
+      ],
+      "query": "what is the user's job?",
+      "should_contain": [
+        "machine learning researcher"
+      ],
+      "should_not_contain": [
+        "is a software engineer"
+      ]
+    },
+    {
+      "name": "job18",
+      "ingest": [
+        "I'm a designer.",
+        "I switched roles \u2014 I'm a machine learning researcher now."
+      ],
+      "query": "what is the user's job?",
+      "should_contain": [
+        "machine learning researcher"
+      ],
+      "should_not_contain": [
+        "is a designer"
+      ]
+    },
+    {
+      "name": "job19",
+      "ingest": [
+        "I'm a product manager.",
+        "I switched roles \u2014 I'm a software engineer now."
+      ],
+      "query": "what is the user's job?",
+      "should_contain": [
+        "software engineer"
+      ],
+      "should_not_contain": [
+        "is a product manager"
+      ]
+    }
+  ]
+}

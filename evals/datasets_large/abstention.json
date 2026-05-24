@@ -1,0 +1,205 @@
+{
+  "description": "generated abstention set",
+  "cases": [
+    {
+      "name": "abs0",
+      "memories": [
+        "User lives in Berlin",
+        "User is vegan",
+        "User enjoys chess"
+      ],
+      "query": "what is the user's bank account number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs1",
+      "memories": [
+        "User lives in Madrid",
+        "User is pescatarian",
+        "User enjoys chess"
+      ],
+      "query": "what is the user's passport number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs2",
+      "memories": [
+        "User lives in Berlin",
+        "User is vegan",
+        "User enjoys rock climbing"
+      ],
+      "query": "what is the user's home alarm code?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs3",
+      "memories": [
+        "User lives in Madrid",
+        "User is vegetarian",
+        "User enjoys rock climbing"
+      ],
+      "query": "what medication does the user take?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs4",
+      "memories": [
+        "User lives in Tokyo",
+        "User is vegan",
+        "User enjoys hiking"
+      ],
+      "query": "what is the user's passport number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs5",
+      "memories": [
+        "User lives in Austin",
+        "User is pescatarian",
+        "User enjoys photography"
+      ],
+      "query": "what is the user's passport number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs6",
+      "memories": [
+        "User lives in Berlin",
+        "User is vegetarian",
+        "User enjoys painting"
+      ],
+      "query": "what is the user's blood type?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs7",
+      "memories": [
+        "User lives in Singapore",
+        "User is vegan",
+        "User enjoys photography"
+      ],
+      "query": "what is the user's bank account number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs8",
+      "memories": [
+        "User lives in Pune",
+        "User is pescatarian",
+        "User enjoys rock climbing"
+      ],
+      "query": "what medication does the user take?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs9",
+      "memories": [
+        "User lives in Pune",
+        "User is pescatarian",
+        "User enjoys cycling"
+      ],
+      "query": "what is the user's bank account number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs10",
+      "memories": [
+        "User lives in Lisbon",
+        "User is vegetarian",
+        "User enjoys cycling"
+      ],
+      "query": "what is the user's blood type?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs11",
+      "memories": [
+        "User lives in Singapore",
+        "User is vegan",
+        "User enjoys chess"
+      ],
+      "query": "what is the user's blood type?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs12",
+      "memories": [
+        "User lives in Bangalore",
+        "User is pescatarian",
+        "User enjoys rock climbing"
+      ],
+      "query": "what is the user's blood type?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs13",
+      "memories": [
+        "User lives in Austin",
+        "User is pescatarian",
+        "User enjoys painting"
+      ],
+      "query": "what is the user's passport number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs14",
+      "memories": [
+        "User lives in Nairobi",
+        "User is pescatarian",
+        "User enjoys photography"
+      ],
+      "query": "what is the user's home alarm code?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs15",
+      "memories": [
+        "User lives in Madrid",
+        "User is vegetarian",
+        "User enjoys chess"
+      ],
+      "query": "what is the user's home alarm code?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs16",
+      "memories": [
+        "User lives in Dublin",
+        "User is vegetarian",
+        "User enjoys rock climbing"
+      ],
+      "query": "what medication does the user take?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs17",
+      "memories": [
+        "User lives in Amsterdam",
+        "User is vegetarian",
+        "User enjoys chess"
+      ],
+      "query": "what is the user's home alarm code?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs18",
+      "memories": [
+        "User lives in Berlin",
+        "User is vegetarian",
+        "User enjoys hiking"
+      ],
+      "query": "what is the user's bank account number?",
+      "max_similarity": 0.55
+    },
+    {
+      "name": "abs19",
+      "memories": [
+        "User lives in Dublin",
+        "User is vegetarian",
+        "User enjoys chess"
+      ],
+      "query": "what is the user's home alarm code?",
+      "max_similarity": 0.55
+    }
+  ]
+}
