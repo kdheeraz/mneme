@@ -53,11 +53,19 @@ python3 evals/run_e2e.py
 ```
 
 ## Findings so far (gemma4:31b)
+> Numbers below are from the post-`5729113` run (the extraction current-state fix).
+> They were captured during that run and have **not** been re-verified since; re-run both
+> suites to refresh before relying on them.
+
 - **Retrieval + abstention: strong** (recall@k 1.00; no spurious hits). The retrieval engine is solid.
 - **Extraction: model-dependent** — qwen3:4b 3/4 (a JSON-parse failure), gemma 4/4.
-- **Knowledge-update (reconciliation): the weak spot** — fails in both suites; a stale fact
-  survives and gets recalled. This is the highest-leverage thing to improve (and what plain
-  vector stores can't do at all).
+- **Knowledge-update (reconciliation): fixed.** Previously the weak spot — failed in both
+  suites because extraction stored the *transition* and dropped the destination state, so a
+  stale fact survived and got recalled. Fix (`5729113`): extraction now records the resulting
+  current state present-tense. Post-fix:
+  - Phase-2 e2e (large 100-sample set): **update 60%→100%, overall 92%→99%**. One remaining
+    miss is a recall-ranking flake (a name not in top-6 for one case), unrelated to the fix.
+  - Phase-1 deterministic: reconciliation **3/3**, extraction **4/4** — no regression.
 
 ## Extending
 - Add cases to `datasets/*.json`.
