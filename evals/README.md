@@ -52,20 +52,54 @@ EVAL_JUDGE_MODEL=gemma4:31b EVAL_JUDGE_URL=https://ollama.com EVAL_JUDGE_KEY=$K 
 python3 evals/run_e2e.py
 ```
 
-## Findings so far (gemma4:31b)
-> Numbers below are from the post-`5729113` run (the extraction current-state fix).
-> They were captured during that run and have **not** been re-verified since; re-run both
-> suites to refresh before relying on them.
+## Findings — real benchmark (LongMemEval oracle)
 
-- **Retrieval + abstention: strong** (recall@k 1.00; no spurious hits). The retrieval engine is solid.
-- **Extraction: model-dependent** — qwen3:4b 3/4 (a JSON-parse failure), gemma 4/4.
-- **Knowledge-update (reconciliation): fixed.** Previously the weak spot — failed in both
-  suites because extraction stored the *transition* and dropped the destination state, so a
-  stale fact survived and got recalled. Fix (`5729113`): extraction now records the resulting
-  current state present-tense. Post-fix:
-  - Phase-2 e2e (large 100-sample set): **update 60%→100%, overall 92%→99%**. One remaining
-    miss is a recall-ranking flake (a name not in top-6 for one case), unrelated to the fix.
-  - Phase-1 deterministic: reconciliation **3/3**, extraction **4/4** — no regression.
+The bundled synthetic e2e set turned out too easy to be a fair proxy: the system that
+scored ~99% on it scored **41% on LongMemEval oracle-100** (gemma4:31b extract+answer+judge).
+Diagnosed via `evals/diag_recall.py` — across 12 sampled failures, **0 were ranking misses**.
+The bottleneck was extraction coverage:
+- over-abstracted specifics ("User likes seafood" instead of "Grilled Snapper with Mango Salsa"),
+- stripped event dates ("User participated in #PlankChallenge" with no date → "X days ago" unanswerable),
+- user-centric framing that dropped assistant-provided facts (recommendations, names).
+
+Two fixes, measured on the same 30 oracle items (before/after on identical items):
+
+- `aa030e2` — richer extraction prompt: preserve specifics verbatim, capture both speakers,
+  attach absolute dates. `gen_lme.py` now prepends `haystack_dates` to sessions and the
+  `question_date` to the question — faithful to the benchmark, which provides both.
+- `ed76d9e` — reconcile pre-filter. With more facts per ingest the per-fact reconcile LLM
+  call became a 25–60s cascade. The LLM is now consulted only on high-similarity candidates
+  (≥0.75) or when the source text carries a change-signal word (`moved`, `no longer`, `now`, ...);
+  everything else just ADDs.
+
+| Axis        | Baseline | After  |
+|-------------|----------|--------|
+| temporal    | 0/6 — 0%   | **6/6 — 100%** |
+| single_hop  | 5/11 — 45% | 8/11 — 73%    |
+| multi_hop   | 4/5 — 80%  | 4/5 — 80%     |
+| update      | 3/6 — 50%  | 4/6 — 67%     |
+| abstention  | 2/2 — 100% | 1/2 — 50%     |
+| **OVERALL** | **14/30 — 47%** | **23/30 — 77%** (+30 pp) |
+
+Deterministic suites unchanged (gemma4:31b): reconciliation 3/3, extraction 4/4.
+
+**Caveats — don't quote these out of context:**
+- Oracle is the evidence-only variant. `longmemeval_s` (~40 distractors per question) is
+  the harder headline number; not yet run at scale.
+- Two update misses suggest the reconcile gate (`HIGH_SIM_GATE=0.75` + signal words) is too
+  narrow on some phrasings — tunable.
+- The new extraction prompt is too long for small models (`qwen3:4b` 502s on it); capable
+  models (gemma4:31b+) handle it. Per-agent LLM config makes this a docs/defaults question.
+
+Reproduce:
+```bash
+python3 evals/gen_lme.py --src evals/benchmarks/longmemeval_oracle.json \
+    --n 30 --out evals/benchmarks/lme_oracle_small --seed 0
+EVAL_DATASET_DIR=evals/benchmarks/lme_oracle_small \
+EVAL_LLM_MODEL=gemma4:31b EVAL_LLM_BASE_URL=https://ollama.com EVAL_LLM_KEY=$K \
+EVAL_JUDGE_MODEL=gemma4:31b EVAL_JUDGE_URL=https://ollama.com EVAL_JUDGE_KEY=$K \
+python3 evals/run_e2e.py
+```
 
 ## Extending
 - Add cases to `datasets/*.json`.
