@@ -618,6 +618,10 @@ def ingest(body: IngestIn, ctx: KeyContext = Depends(require_key), db: Session =
     except Exception as ex:
         raise HTTPException(502, f"extraction failed: {ex}")
 
+    # Raw source text — passed to reconcile so its change-signal gate ("moved", "now",
+    # "no longer", ...) catches contradictions that extraction normalized out of `content`.
+    _src = " ".join([m.get("content", "") for m in (messages or [])] + [body.text or ""]).strip()
+
     persisted: List[Memory] = []
     ops_summary: dict = {}
     out_memories: List[MemoryOut] = []
@@ -633,6 +637,7 @@ def ingest(body: IngestIn, ctx: KeyContext = Depends(require_key), db: Session =
                     content=item["content"], kind=item["kind"], scope=body.scope,
                     user_id=body.user_id, session_id=body.session_id,
                     importance=body.importance, meta={"source": "ingest"},
+                    source_text=_src,
                 )
             else:
                 vec = embed_for_agent(item["content"], agent, ctx.tenant.embedding_dim)

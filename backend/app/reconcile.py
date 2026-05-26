@@ -23,6 +23,24 @@ from .llm import chat
 from .jsonutil import parse_json_lenient
 
 
+# Above this candidate-similarity, ALWAYS consult the LLM (likely dup / UPDATE / DELETE).
+# Below it, only consult the LLM when the new fact carries an explicit change signal —
+# otherwise just ADD. This kills the per-fact LLM cascade that made rich-extraction ingests
+# (10-15 facts each) take 25-60s. The threshold is below the ~0.77 worst-case cited in the
+# sim_threshold comment below, so genuine contradictions phrased differently still trigger.
+HIGH_SIM_GATE = 0.75
+CHANGE_SIGNAL_WORDS = (
+    " left ", " moved ", " no longer ", " now ", " switched ", " previously ",
+    " used to ", " instead of ", " no more ", " changed ", " updated ", " as of ",
+    " formerly ", " ex-", " quit ", " stopped ", " anymore ", " update: ",
+)
+
+
+def _has_change_signal(text: str) -> bool:
+    t = " " + (text or "").lower() + " "
+    return any(sig in t for sig in CHANGE_SIGNAL_WORDS)
+
+
 DECISION_SYSTEM = (
     "You manage an AI agent's long-term memory. The EXISTING memories represent the user's "
     "CURRENT state. Given a NEW fact and the most similar EXISTING memories, choose exactly "
@@ -90,6 +108,10 @@ def reconcile_write(
     content: str, kind: str, scope: str,
     user_id: Optional[str], session_id: Optional[str],
     importance: float, meta: Optional[dict],
+    # Raw source text that produced `content` (e.g. the ingest transcript). Used only by
+    # the change-signal pre-filter — extraction strips words like 'moved/now/no longer'
+    # when normalizing to present-tense, so we'd miss them if we only inspected `content`.
+    source_text: Optional[str] = None,
     # Candidate floor for what the LLM gets to reconcile against. Kept moderate (not 0.80):
     # genuinely-contradictory facts can be only ~0.77 similar when phrased differently
     # (e.g. "moved to Berlin" vs "lives in Bangalore"), and the LLM is the real gate —
@@ -105,6 +127,15 @@ def reconcile_write(
 
     # Nothing similar, or no LLM to reason with → ADD.
     if not candidates or (agent.llm_provider or "none") == "none":
+        return _insert(db, tenant, agent_slug, content, kind, scope, user_id, session_id, importance, meta, vec), "ADD"
+
+    # Fast path: only pay the LLM when reconciliation is actually likely.
+    # (a) a candidate is very similar (likely duplicate / UPDATE / DELETE), or
+    # (b) the new fact carries an explicit change signal ('moved', 'no longer', 'now', ...).
+    # Otherwise just ADD. This cuts per-ingest LLM calls from O(facts) to ~the few that
+    # genuinely need a decision, without weakening contradiction handling.
+    max_sim = max(s for _, s in candidates)
+    if max_sim < HIGH_SIM_GATE and not _has_change_signal(content) and not _has_change_signal(source_text):
         return _insert(db, tenant, agent_slug, content, kind, scope, user_id, session_id, importance, meta, vec), "ADD"
 
     try:

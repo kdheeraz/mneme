@@ -22,3 +22,9 @@ out/
 .license_signing_key.pem
 backend/.license_signing_key.pem
 .licgen/
+
+# Eval secrets — never commit
+evals/.ollama_cloud_key
+
+# Benchmark data + generated subsets (large / derived) — keep gen_lme.py, not the data
+evals/benchmarks/
