@@ -91,9 +91,10 @@ def judge(question, reference, candidate, category) -> bool:
 
 
 def main():
-    print(f"Mneme E2E eval · {BASE} · answer+judge={JUDGE_MODEL}")
+    reconcile = os.environ.get("EVAL_RECONCILE", "1") not in ("0", "false", "no")
+    print(f"Mneme E2E eval · {BASE} · answer+judge={JUDGE_MODEL} · reconcile={reconcile}")
     token = login()
-    key = ensure_agent(token, reconcile=True)
+    key = ensure_agent(token, reconcile=reconcile)
     ds = json.loads((DATA_DIR / "e2e.json").read_text())
     cats: dict[str, list[int]] = {}
     rows = []
